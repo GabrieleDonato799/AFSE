@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Unpacking</title>
+	</head>
+	<body>
+		<div class="container">
+		</div>
+	</body>
+	<script src="shared/api_marvel.js"></script>
+	<script src="shared/lib.js"></script>
+	<script>
+        var user_id = localStorage.getItem("user_id");
+
+        if(user_id === undefined) throw new Error("Unauthorized");
+
+        function openPacket(){
+            const options = {
+                "method": "GET",
+                "headers": {
+                    "Content-Type": "application/json",
+                }
+            };
+
+            fetch(`${url_backend}/packets/${user_id}`, options)
+                .then(response => {
+                    if(response.ok){
+                        response.json().then(json => {
+                            console.log(json);
+                        })
+                    }
+                });
+        }
+        openPacket();
+	</script>
+</html>
