@@ -37,7 +37,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="lib.js"></script>
+    <script src="shared/lib.js"></script>
     <script>
         let form = document.getElementById("registerForm");
         let alert = document.getElementById("registerAlert");
@@ -86,7 +86,7 @@
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {
-                            localStorage.setItem("id_utente", json._id);
+                            localStorage.setItem("user_id", json._id);
 
                             alert.innerHTML = "Registrato con successo!";
                             alert.classList.add("alert-success");

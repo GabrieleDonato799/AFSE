@@ -1,8 +1,10 @@
 const fs = require('fs');
 const express = require('express');
 const crypto = require('crypto');
-const { MongoClient, ObjectId } = require('mongodb');
+const { MongoClient, ObjectId, Db } = require('mongodb');
 const cors = require('cors');
+const api_marvel = require('../front/shared/api_marvel.js');
+const lib = require('../front/shared/lib.js');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 const e = require('express');
@@ -11,11 +13,31 @@ const { log } = require('console');
 const HOST = "0.0.0.0";
 const PORT = 3005;
 const DB_NAME = "afse"; // MongoDB Atlas DB name
+const SUPERCARD_PACKET_SIZE = 5;
 
 const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
+
+// It contains all the data extracted from the Marvel API,
+// without the characters with a missing thumbnail and
+// with the precalculated rarity 
+var marvelCharacters = undefined;
+
+getMarvelCharacters().then((res) =>{
+    marvelCharacters = res;
+});
+
 const client = new MongoClient(mAtlasURI);
 const app = express();
 
+function waitMarvelData(req,res,next){
+    if(marvelCharacters === undefined){
+        res.status(500)
+        return res.json({ error: "Server starting" })
+    }
+    next();
+}
+
+app.use(waitMarvelData);
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
@@ -26,23 +48,137 @@ function hashSha256(input){
     .digest('hex')
 }
 
+// A memoized function to retrieve the marvel characters
+// redefined by getMarvelCharacters() every time it recalculates
+// the character list
+var getMarvelCharacterById = undefined;
+
+async function getMarvelCharacters(){
+    let characters = [];
+
+    // Returns a dataset comprising the name, modified date and rarity of every
+    // superhero where a thumbnail is provided (not verifing if it is actually ok)
+
+    let reqs = []
+    for(i=0; i<17; i++){
+        reqs.push(api_marvel.getFromMarvel(`public/characters`,`limit=100&offset=${i*100}`));
+    }
+    return Promise.all(reqs).then(responses => {
+        for(res of responses){
+            for(hero of res['data']['results']){
+                if(!hero['thumbnail']['path'].includes("image_not_available")){
+                    let rarity = hero['comics']['available']
+                    rarity += hero['series']['available']
+                    rarity += hero['events']['available']
+                    hero.rarity = rarity;
+                    characters.push(hero);
+                }
+            }
+        }
+
+        let rarities = calculateRarity(characters);
+        let rarityColors = determineRarityColors(rarities);
+        for(i in characters){
+            characters[i].rarity = rarityColors[i]; 
+        }
+
+        getMarvelCharacterById = lib.memoize(function (id) {
+            for(c of marvelCharacters){
+                if(c.id === id){
+                    return c;
+                }
+            }
+        });
+
+        return characters;
+    });
+}
+
+function calculateRarity(characters){
+    let rarity = [];
+    let tot_rarity = 0;
+    let invert_rarity = [];
+    let min_rarity = Number.MAX_VALUE;
+    let min_invert_rarity = [];
+    let norm_rarity = [];
+
+    for(elem of characters)
+        rarity.push(elem.rarity);
+    for(r of rarity)
+        tot_rarity += r;
+    for(r of rarity)
+        invert_rarity.push(tot_rarity-r);
+    for(r of invert_rarity)
+        if(r < min_rarity)
+            min_rarity = r;
+    min_rarity -= 1;
+    for(r of invert_rarity)
+        min_invert_rarity.push(r-min_rarity);
+    tot_rarity = 0;
+    for(r of min_invert_rarity)
+        tot_rarity += r;
+    for(r of min_invert_rarity)
+        norm_rarity.push(r/tot_rarity);
+
+    return norm_rarity;
+}
+
+// Takes the rarities of the characters and determines
+// for each one which rarity color to assign.
+function determineRarityColors(rarities){
+    let colors = ["ff0000", "ffcc00", "9c00ff", "0090ff", "009623"];
+    let max = Math.max(...rarities);
+    let min = Math.min(...rarities);
+
+    // Every character will get the rarity color depending on which
+    // threshold it gets past, binarySearchRight() requires the first value
+    // to be 0.0, otherwise it wont ever return the first intended value
+    let rarityThresholds = [];
+    let step = (max/colors.length);
+    for(let i=0; i<colors.length; i++){
+        rarityThresholds.push(step * i);
+    }
+
+    // console.log(min);
+    // console.log(max);
+    // console.log(colors.length);
+    // console.log(rarities);
+    // console.log(rarityThresholds);
+    // console.log(step);
+
+    // Determine the color for every character
+    let rarityColors = [];
+    for(let i=0; i<rarities.length; i++){
+        rarityColors[i] = colors[lib.binarySearchRight(rarityThresholds, rarities[i])];
+    }
+
+    // console.log(rarityColors);
+
+    return rarityColors;
+}
+
 /**
  * Ottieni un utente specifico per ID dal database
  */
 async function getUser(id) {
-    const pwmClient = await client.connect();
-    const user = await pwmClient.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
-    await pwmClient.close();
-    return user;
+    try {
+        const mConn = await client.connect();
+        const user = await mConn.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
+        return user;
+    }catch(e){
+        console.log("MongoDB overloaded?");
+    }finally{
+        await mConn.close();
+    }
 }
 
 /**
  * Elimina un utente per ID dal database
  */
 // async function deleteUser(res, id) {
-//     const pwmClient = await client.connect();
-//     const result = await pwmClient.db(DB_NAME).collection("users").deleteOne({ _id: ObjectId.createFromHexString(id) });
-//     await pwmClient.close();
+//     const mConn = await client.connect();
+//     const result = await mConn.db(DB_NAME).collection("users").deleteOne({ _id: ObjectId.createFromHexString(id) });
+//     await mConn.close();
 //     res.json(result);
 // }
 
@@ -64,10 +200,10 @@ async function addUser(res, user) {
 
     user.password = hashSha256(user.password)
 
-    const pwmClient = await client.connect();
+    const mConn = await client.connect();
     try {
         // Inserisce il nuovo utente nel database
-        await pwmClient.db(DB_NAME).collection("users").findOne(
+        await mConn.db(DB_NAME).collection("users").findOne(
             {email:user.email}
         )
         .then(response => {
@@ -82,7 +218,9 @@ async function addUser(res, user) {
             }
         });
 
-        await pwmClient.db(DB_NAME).collection("users").insertOne(user);
+        const insertedUser = await mConn.db(DB_NAME).collection("users").insertOne(user);
+        await mConn.close();
+        createUserAlbum(insertedUser.insertedId);
         res.status(201).json({"_id":user._id});
     } catch (e) {
         if (e.code === 11000) {
@@ -91,7 +229,7 @@ async function addUser(res, user) {
             res.status(500).json({ error: `Generic error: ${e.code}` });
         }
     } finally {
-        await pwmClient.close();
+        await mConn.close();
     }
 }
 
@@ -111,19 +249,92 @@ async function loginUser(res, body) {
 
     body.password = hashSha256(body.password);
 
-    const pwmClient = await client.connect();
+    const mConn = await client.connect();
     // Cerca un utente con l'email e la password specificate
-    const user = await pwmClient.db(DB_NAME).collection("users").findOne({
+    const user = await mConn.db(DB_NAME).collection("users").findOne({
         email: body.email,
         password: body.password
     });
-    await pwmClient.close();
+    await mConn.close();
 
     if (user) {
         res.json({ id: user._id });
     } else {
         res.status(404).json({ error: "Credenziali Errate" });
     }
+}
+
+async function createUserAlbum(uid){
+    const mConn = await client.connect();
+    const hasAlbum = await mConn.db(DB_NAME).collection("albums").findOne({
+        user_id: uid 
+    });
+
+    if(hasAlbum) return;
+
+    const albumCreated = await mConn.db(DB_NAME).collection("albums").insertOne(
+        {
+            user_id: uid,
+            supercards: []
+        }
+    );
+
+    const albumLinked = await mConn.db(DB_NAME).collection("users").updateOne(
+        {_id: uid},
+        {$set: {album_id: albumCreated.insertedId}}
+    );
+
+    await mConn.close();
+}
+
+async function getUserAlbum(res, uid){
+    const mConn = await client.connect();
+    const albumData = await mConn.db(DB_NAME).collection("albums").findOne({
+        user_id: ObjectId.createFromHexString(uid) 
+    });
+    await mConn.close();
+
+    var album = {supercards: []};
+    for(hero_id of albumData.supercards){
+        let hero = getMarvelCharacterById(hero_id);
+        
+        if(hero === undefined)
+            continue;
+        album.supercards.push({
+            id: hero_id,
+            name: hero.name,
+            rarity: hero.rarity,
+            thumbnail: hero.thumbnail.path + "." + hero.thumbnail.extension
+        });
+    }
+
+    album.supercards.sort((a, b) => {return a.name.localeCompare(b.name)});
+
+    res.json(album);
+}
+
+async function generatePacket(res, uid){
+    let packet = [];
+
+    for(i=0; i<SUPERCARD_PACKET_SIZE; i++){
+        id = crypto.randomInt(0, marvelCharacters.length);
+        packet.push(marvelCharacters[id].id);
+    }
+
+    // Updates the user album
+    const mConn = await client.connect();
+    try{
+        const album = await mConn.db(DB_NAME).collection("albums").updateOne(
+            {user_id: ObjectId.createFromHexString(uid)},
+            {$addToSet: {supercards: {$each: packet}}}
+        );
+    }catch(e){
+        console.log("MongoDB overloaded?");
+    }finally{
+        await mConn.close();
+    }
+
+    res.json(packet);
 }
 
 // account routes
@@ -134,6 +345,18 @@ app.post('/account/login', (req, res) => {
 
 app.post("/account/register", (req, res) => {
     addUser(res, req.body);
+});
+
+// album routes
+app.get("/album/:uid", (req, res) => {
+    const uid = req.params.uid;
+    getUserAlbum(res, uid);
+});
+
+// packets routes
+app.get("/packets/:uid", (req, res) =>{
+    const uid = req.params.uid;
+    generatePacket(res, uid);
 });
 
 // start the server

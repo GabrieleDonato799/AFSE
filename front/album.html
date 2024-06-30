@@ -19,8 +19,8 @@
         }
 
         .card {
-            width: 300px;
-            height: 500px;
+            width: 250px;
+            height: 400px;
         }
     </style>
 </head>
@@ -32,8 +32,8 @@
             <button class="col" onclick='nextPage();'>Pagina successiva</button>
         </div>
     </div>
-    <div id="container" class="row row-cols-2 bg-info d-flex justify-content-around">
-        <div id="card_film" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none bg-dark">
+    <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
+        <div id="card_film" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
             <h6 id="card_title" class="card-title text-light text-center"></h6>
             <img id="card_image" src="" class="card-img-top" alt="...">
             <!-- <div class="card-body">
@@ -53,31 +53,35 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-    <script src="api_marvel.js"></script>
-    <script src="utils.js"></script>
+    <script src="shared/api_marvel.js"></script>
+    <script src="shared/lib.js"></script>
     <script>
         var page = 1;
-        var pageSize = 100; 
+        var pageSize = 100;
+        var user_id = localStorage.getItem("user_id");
+        var userAlbum = undefined;
 
-        function nextPage(){
-            page += 1;
-            getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
-        }
+        if(user_id === undefined) throw new Error("Unauthorized");
 
-        function previousPage(){
-            if(page > 0)
-                page -= 1;
-            getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
-        }
+        // function nextPage(){
+        //     page += 1;
+        //     getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
+        // }
 
-        function getSupercards(path, query){
-            return _getFromMarvel(path, query).then(
-                response => { showSupercards(response); }
-            );
-        }
+        // function previousPage(){
+        //     if(page > 0)
+        //         page -= 1;
+        //     getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
+        // }
+
+        // function getSupercards(path, query){
+        //     return _getFromMarvel(path, query).then(
+        //         response => { showSupercards(response, userAlbum); }
+        //     );
+        // }
 
         // TODO: substitute with the caching mechanism
-        var _getFromMarvel = memoize(getFromMarvel);
+        // var _getFromMarvel = memoize(getFromMarvel);
 
         function showSupercards(response){
             card = document.getElementById('card_film');
@@ -85,10 +89,8 @@
             container.innerHTML = "";
             container.append(card);
 
-            for (i = 0; i < response['data']['results'].length; i++) {
-                let superhero = response['data']['results'][i];
-                if(superhero['thumbnail']['path'].includes("image_not_available"))
-                    continue;
+            for (i = 0; i < response.length; i++) {
+                let superhero = response[i];
 
                 clone = card.cloneNode(true);
                 clone.id = 'card-film-' + i;
@@ -99,32 +101,16 @@
                 button = clone.getElementsByClassName('btn-primary')[0];
 
                 title.innerHTML = superhero.name;
-                // overview.innerHTML = superhero.description;
-                image.src = superhero['thumbnail']['path'] + "." + superhero['thumbnail']['extension'];
-                // button.href = "scheda-film.html?id=" + i;
+                image.src = superhero['thumbnail'];
+
+                // set the rarity color on the supercard
+                clone.style.backgroundColor = `#${superhero.rarity}`;
 
                 clone.classList.remove('d-none')
                 card.before(clone)
             }
         }
-
-        getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
-        // getPopolari();
-
-        // function getPopolari() {
-        //     const options = {
-        //         method: 'GET'
-        //     };
-            
-        //     language = document.getElementById('selected_language').value;
-        //     page = document.getElementById('selected_page').value;
-
-        //     fetch('https://api.themoviedb.org/3/movie/popular?api_key=' + api_key + '&language=' + language + '&page=' + page, options)
-        //         .then(response => response.json())
-        //         .then(response => mostraPopolari(response))
-        //         .catch(err => console.error(err));
-        // }
-
+        
         // function getLanguages(){
         //     //https://api.themoviedb.org/3/configuration/languages 
         //     fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${api_key}`)
@@ -132,15 +118,27 @@
         //     .then(response => mostraLingue(response))
         // }
 
-        function ricercaAggiornata() {
-            query = document.getElementById('query').value;
-            if (query.length > 3) {
-                ricerca()
-            }else if (query.length === 0){
-                console.log("casa")
-                getPopolari()
-            }
+        async function getUserAlbum(){
+            const options = {
+                "method": "GET",
+                "headers": {
+                    "Content-Type": "application/json",
+                }
+            };
+
+            await fetch(`${url_backend}/album/${user_id}`, options)
+                .then(response => {
+                    if(response.ok){
+                        response.json().then(json => {
+                            userAlbum = json['supercards'];
+                            showSupercards(userAlbum);
+                        })
+                    }
+                });
         }
+
+        getUserAlbum();
+        // getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);        
     </script>
 </body>
 </html>
