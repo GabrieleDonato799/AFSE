@@ -26,74 +26,80 @@
 </head>
 
 <body class="bg-info">
-    <div class="container bg-info">
+    <div class="container">
+        <nav id="navbar"></nav>
         <div class="row d-flex justify-content-between">
-            <button class="col" onclick='previousPage();'>Pagina precedente</button>
-            <button class="col" onclick='nextPage();'>Pagina successiva</button>
+            <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>
+            <button class="col btn bg-light" onclick='nextPage();'>Pagina successiva</button>
+            <button id="exchange_button" class="col btn bg-light d-none" onclick='backToExchange();'>Back to exchange</button>
         </div>
-    </div>
-    <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
-        <div id="card_film" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
-            <h6 id="card_title" class="card-title text-light text-center"></h6>
-            <img id="card_image" src="" class="card-img-top" alt="...">
-            <!-- <div class="card-body">
-                <p id="card_overview" class="card-text"></p>
-            </div> -->
-            <div class="card-footer">
-                <a href="scheda-film.html" class="btn btn-primary">Dettagli</a>
+        
+        <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
+            <div id="supercard" onclick="select(this);" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
+                <h6 id="card_title" class="card-title text-light text-center"></h6>
+                <img id="card_image" src="" class="card-img-top" alt="...">
+                <!-- <div class="card-body">
+                    <p id="card_overview" class="card-text"></p>
+                </div> -->
+                <div class="card-footer">
+                    <a href="supercard.html" class="btn btn-primary">Dettagli</a>
+                </div>
             </div>
         </div>
     </div>
-    <div class="container bg-dark">
+    <div class="container bg-info">
         <div class="row d-flex justify-content-between">
-            <button class="col" onclick='previousPage();'>Pagina precedente</button>
-            <button class="col" onclick='nextPage();'>Pagina successiva</button>
+            <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>
+            <button class="col btn bg-light" onclick='nextPage();'>Pagina successiva</button>
+            <button id="exchange_button" class="col btn bg-light d-none" onclick='backToExchange();'>Back to exchange</button>
         </div>
     </div>
+    
+    <script src="shared/navbar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="shared/api_marvel.js"></script>
     <script src="shared/lib.js"></script>
     <script>
-        var page = 1;
-        var pageSize = 100;
+        const MAX_SELECTED = 4;
+        const PAGE_SIZE = 20;
+        var page = 0;
         var user_id = localStorage.getItem("user_id");
         var userAlbum = undefined;
+        var params = new URLSearchParams(window.location.search);
+        var op = params.get("op");
+        // var selected = new Set(); // eventually selected supercards for an exchange
+        let exchangeState = new lib.ExchangeState();
+
+        if(exchangeState.checkOp(op)){
+            document.getElementById("exchange_button").classList.remove("d-none");
+        }
 
         if(user_id === undefined) throw new Error("Unauthorized");
 
-        // function nextPage(){
-        //     page += 1;
-        //     getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
-        // }
+        function nextPage(){
+            page += 1;
+            showSupercards(userAlbum);
+        }
 
-        // function previousPage(){
-        //     if(page > 0)
-        //         page -= 1;
-        //     getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);
-        // }
-
-        // function getSupercards(path, query){
-        //     return _getFromMarvel(path, query).then(
-        //         response => { showSupercards(response, userAlbum); }
-        //     );
-        // }
-
-        // TODO: substitute with the caching mechanism
-        // var _getFromMarvel = memoize(getFromMarvel);
+        function previousPage(){
+            if(page > 0)
+                page -= 1;
+            showSupercards(userAlbum);
+        }
 
         function showSupercards(response){
-            card = document.getElementById('card_film');
+            card = document.getElementById('supercard');
             container = document.getElementById('container');
             container.innerHTML = "";
             container.append(card);
 
-            for (i = 0; i < response.length; i++) {
+            for (i = page*PAGE_SIZE; i < Math.min(response.length, (page+1)*PAGE_SIZE); i++) {
                 let superhero = response[i];
 
                 clone = card.cloneNode(true);
-                clone.id = 'card-film-' + i;
+                clone.id = 'supercard-' + superhero.id;
 
                 title = clone.getElementsByClassName('card-title')[0];
                 overview = clone.getElementsByClassName('card-text')[0];
@@ -110,13 +116,6 @@
                 card.before(clone)
             }
         }
-        
-        // function getLanguages(){
-        //     //https://api.themoviedb.org/3/configuration/languages 
-        //     fetch(`https://api.themoviedb.org/3/configuration/languages?api_key=${api_key}`)
-        //     .then(response => response.json())
-        //     .then(response => mostraLingue(response))
-        // }
 
         async function getUserAlbum(){
             const options = {
@@ -137,8 +136,27 @@
                 });
         }
 
-        getUserAlbum();
-        // getSupercards("public/characters", `limit=${pageSize}&offset=${page*pageSize}`);        
+        function select(callingElem){
+            if(!exchangeState.checkOp(op)) return;
+
+            let size = exchangeState.size(op);
+            
+            if(size < MAX_SELECTED_CARDS_EXCHANGE_PER_OP){
+                let idToAdd = Number(callingElem.id.split("-")[1]);
+
+                exchangeState.add(op, idToAdd);
+            }else{
+                // Error
+            }
+        }
+
+        // Sends back to the exchange page the selected cards
+        function backToExchange(){
+            if(!exchangeState.checkOp(op)) return;
+            window.location.href = `exchange.html`;
+        }
+
+        getUserAlbum();      
     </script>
 </body>
 </html>

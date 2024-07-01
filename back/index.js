@@ -26,7 +26,15 @@ getMarvelCharacters().then((res) =>{
     marvelCharacters = res;
 });
 
-const client = new MongoClient(mAtlasURI);
+var client = new MongoClient(mAtlasURI);
+process.on('uncaughtException', function(err) {
+    if(err.name == "MongoTopologyClosedError" ||
+        err.name == "MongoExpiredSessionError"
+    ){
+        client = new MongoClient(mAtlasURI);
+    }
+})
+
 const app = express();
 
 function waitMarvelData(req,res,next){
@@ -60,12 +68,12 @@ async function getMarvelCharacters(){
     // superhero where a thumbnail is provided (not verifing if it is actually ok)
 
     let reqs = []
-    for(i=0; i<17; i++){
+    for(let i=0; i<17; i++){
         reqs.push(api_marvel.getFromMarvel(`public/characters`,`limit=100&offset=${i*100}`));
     }
     return Promise.all(reqs).then(responses => {
-        for(res of responses){
-            for(hero of res['data']['results']){
+        for(let res of responses){
+            for(let hero of res['data']['results']){
                 if(!hero['thumbnail']['path'].includes("image_not_available")){
                     let rarity = hero['comics']['available']
                     rarity += hero['series']['available']
@@ -78,12 +86,16 @@ async function getMarvelCharacters(){
 
         let rarities = calculateRarity(characters);
         let rarityColors = determineRarityColors(rarities);
-        for(i in characters){
+        for(let i in characters){
             characters[i].rarity = rarityColors[i]; 
         }
 
+        for(let i in characters){
+            characters[i].thumbnail = characters[i].thumbnail.path + "." + characters[i].thumbnail.extension; 
+        }
+
         getMarvelCharacterById = lib.memoize(function (id) {
-            for(c of marvelCharacters){
+            for(let c of marvelCharacters){
                 if(c.id === id){
                     return c;
                 }
@@ -102,22 +114,22 @@ function calculateRarity(characters){
     let min_invert_rarity = [];
     let norm_rarity = [];
 
-    for(elem of characters)
+    for(let elem of characters)
         rarity.push(elem.rarity);
-    for(r of rarity)
+    for(let r of rarity)
         tot_rarity += r;
-    for(r of rarity)
+    for(let r of rarity)
         invert_rarity.push(tot_rarity-r);
-    for(r of invert_rarity)
+    for(let r of invert_rarity)
         if(r < min_rarity)
             min_rarity = r;
     min_rarity -= 1;
-    for(r of invert_rarity)
+    for(let r of invert_rarity)
         min_invert_rarity.push(r-min_rarity);
     tot_rarity = 0;
-    for(r of min_invert_rarity)
+    for(let r of min_invert_rarity)
         tot_rarity += r;
-    for(r of min_invert_rarity)
+    for(let r of min_invert_rarity)
         norm_rarity.push(r/tot_rarity);
 
     return norm_rarity;
@@ -295,7 +307,7 @@ async function getUserAlbum(res, uid){
     await mConn.close();
 
     var album = {supercards: []};
-    for(hero_id of albumData.supercards){
+    for(let hero_id of albumData.supercards){
         let hero = getMarvelCharacterById(hero_id);
         
         if(hero === undefined)
@@ -304,7 +316,7 @@ async function getUserAlbum(res, uid){
             id: hero_id,
             name: hero.name,
             rarity: hero.rarity,
-            thumbnail: hero.thumbnail.path + "." + hero.thumbnail.extension
+            thumbnail: hero.thumbnail
         });
     }
 
@@ -316,7 +328,7 @@ async function getUserAlbum(res, uid){
 async function generatePacket(res, uid){
     let packet = [];
 
-    for(i=0; i<SUPERCARD_PACKET_SIZE; i++){
+    for(let i=0; i<SUPERCARD_PACKET_SIZE; i++){
         id = crypto.randomInt(0, marvelCharacters.length);
         packet.push(marvelCharacters[id].id);
     }
@@ -350,13 +362,49 @@ app.post("/account/register", (req, res) => {
 // album routes
 app.get("/album/:uid", (req, res) => {
     const uid = req.params.uid;
+
+    try{
+        ObjectId.createFromHexString(uid);
+    }catch(e){
+        res.status(400);
+        res.json({error: "missing uid"});
+        return;
+    }
+
     getUserAlbum(res, uid);
 });
 
 // packets routes
 app.get("/packets/:uid", (req, res) =>{
     const uid = req.params.uid;
+
+    try{
+        ObjectId.createFromHexString(uid);
+    }catch(e){
+        res.status(400);
+        res.json({error: "missing uid"});
+        return;
+    }
+    
     generatePacket(res, uid);
+});
+
+// characters routes
+app.get("/characters/:cid", (req, res) => {
+    var cid = req.params.cid;
+    if(cid === undefined){
+        res.status(400);
+        res.json({error: "missing cid"});
+        return;
+    }
+    try{
+        cid = Number.parseInt(cid);
+    }catch(e){
+        res.status(400);
+        res.json({error: "cid is not a number"});
+        return;
+    }
+    res.json({result: getMarvelCharacterById(cid)});
 });
 
 // start the server
