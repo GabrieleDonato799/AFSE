@@ -9,11 +9,13 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 const e = require('express');
 const { log } = require('console');
+const { off } = require('process');
 
 const HOST = "0.0.0.0";
 const PORT = 3005;
 const DB_NAME = "afse"; // MongoDB Atlas DB name
 const SUPERCARD_PACKET_SIZE = 5;
+const PRICE_FOR_A_PACKET = 1;
 
 const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
 
@@ -327,26 +329,100 @@ async function getUserAlbum(res, uid){
 
 async function generatePacket(res, uid){
     let packet = [];
-
-    for(let i=0; i<SUPERCARD_PACKET_SIZE; i++){
-        id = crypto.randomInt(0, marvelCharacters.length);
-        packet.push(marvelCharacters[id].id);
-    }
-
-    // Updates the user album
+    let userBalance = 0; 
+    
     const mConn = await client.connect();
+    // TODO: Atomically check the user balance and update its album if not full
     try{
-        const album = await mConn.db(DB_NAME).collection("albums").updateOne(
+        // retrieves the user balance
+        // FIND
+        userBalance = await mConn.db(DB_NAME).collection("users").findOne(
+            {user_id: ObjectId.createFromHexString(uid)},
+        ).balance;
+
+        // BACKEND CHECK
+        if(userBalance < PRICE_FOR_A_PACKET){
+            res.json({error: "insufficient balance"});
+            res.status(402);
+            return;
+        }
+
+        // GENERATION
+        for(let i=0; i<SUPERCARD_PACKET_SIZE; i++){
+            id = crypto.randomInt(0, marvelCharacters.length);
+            packet.push(marvelCharacters[id].id);
+        }
+        
+        // UPDATE DOCUMENT IN A DIFFERENT COLLECTION
+        // Updates the user album
+        console.log(await mConn.db(DB_NAME).collection("albums").updateOne(
             {user_id: ObjectId.createFromHexString(uid)},
             {$addToSet: {supercards: {$each: packet}}}
-        );
+        ));
+
+        // UPDATE
+        console.log(await mConn.db(DB_NAME).collection("users").updateOne(
+            {_id: ObjectId.createFromHexString(uid)},
+            {$inc: {balance: -1}}
+        ));
+    
+        res.json(packet);
     }catch(e){
         console.log("MongoDB overloaded?");
     }finally{
         await mConn.close();
     }
+}
 
-    res.json(packet);
+async function getOffers(res){
+    const mConn = await client.connect();
+    var offers = [];
+
+    try{
+        response = await mConn.db(DB_NAME).collection("offers").find();
+        // console.log(offers);
+        for await (let o of response){
+            offers.push(o);
+        }
+        res.json({offers});
+    }catch(e){
+        console.log("MongoDB overloaded?");
+        console.log(e);
+    }finally{
+        await mConn.close();
+    }
+}
+
+async function buyOffer(req, res, uid){
+    const mConn = await client.connect();
+    const id = req.body.id;
+
+    try{
+        // retrieve the corresponding offer
+        offer = await mConn.db(DB_NAME).collection("offers").findOne(
+            {_id: ObjectId.createFromHexString(id)}
+        );
+        console.log(offer);
+
+        // TODO: Atomically check the user balance and update it accordingly
+        if(offer.type === "coins"){
+            const albumLinked = await mConn.db(DB_NAME).collection("users").updateOne(
+                {_id: ObjectId.createFromHexString(uid)},
+                {$inc: {balance: offer.amount}}
+            );
+        }else if(offer.type === "packets"){
+            // check if user has sufficient balance --> 
+
+            // update user balance
+        }
+
+        res.json({ok: "ok"});
+    }catch(e){
+        console.log("MongoDB overloaded?");
+        console.log(e);
+    }finally{
+        await mConn.close();
+    }
 }
 
 // account routes
@@ -406,6 +482,21 @@ app.get("/characters/:cid", (req, res) => {
     }
     res.json({result: getMarvelCharacterById(cid)});
 });
+
+// offers for coins and supercards packets route
+app.get("/offers", (req, res) => {
+    getOffers(res);
+});
+
+app.post("/offers/buy/:uid", (req, res) => {
+    var uid = req.params.uid;
+    if(uid === undefined){
+        res.status(400);
+        res.json({error: "missing uid"});
+        return;
+    }
+    buyOffer(req, res, uid);
+})
 
 // start the server
 app.listen(PORT, HOST, () => {
