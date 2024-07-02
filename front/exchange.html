@@ -75,6 +75,24 @@
                 </div>
             </div>
         </div>
+
+        <div class="divider"><hr></div>
+        <h3>Your trades</h3>
+        <div class="divider-half"></div>
+        <div id="container_trades" class="accordion">
+            <div id="template_trade" class="accordion-item d-none">
+                <h2 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                        Trade 1
+                    </button>
+                </h2>
+                <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#container_trades">
+                    <div class="accordion-body">
+                        Trading data here
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="shared/navbar.js"></script>
@@ -127,12 +145,56 @@
                 console.log("Exchange is not complete!");
                 return;
             }
+
+            const options = {
+                "method": "POST",
+                "body": JSON.stringify({
+                    offerer: localStorage.getItem("user_id"),
+                    wanter: null,
+                    offers: exchangeState.offered,
+                    wants: exchangeState.wanted
+                }),
+                "headers": {
+                    "Content-Type": "application/json",
+                    "Accepts": "application/json"
+                }
+            };
+
+            fetch(`${url_backend}/exchange/trade`, options)
+                .then(response => {
+                    if(response.ok){
+                        response.json().then(json => {
+                            clearState();
+                            console.log(json);
+                            getTrades();
+                            // if(json.result === undefined) return;
+
+                            // let superhero = json.result;
+                            // let clone = card.cloneNode(true);
+                            // clone.id = `supercard-${op}-` + cid;
+
+                            // title = clone.getElementsByClassName('card-title')[0];
+                            // overview = clone.getElementsByClassName('card-text')[0];
+                            // image = clone.getElementsByClassName('card-img-top')[0];
+                            // button = clone.getElementsByClassName('btn-primary')[0];
+
+                            // title.innerHTML = superhero.name;
+                            // image.src = superhero['thumbnail'];
+
+                            // // set the rarity color on the supercard
+                            // clone.style.backgroundColor = `#${superhero.rarity}`;
+
+                            // clone.classList.remove('d-none')
+                            // container.appendChild(clone);
+                        })
+                    }
+                });
         }
 
         // clears all the selected figures
         function clearState(){
             for(let id of exchangeState.offered){
-                let e = document.getElementById(`supercard-offered-${id}`).remove();
+                document.getElementById(`supercard-offered-${id}`).remove();
             }
             for(let id of exchangeState.wanted){
                 document.getElementById(`supercard-wanted-${id}`).remove();
@@ -151,8 +213,14 @@
         }
 
         function swapState(){
+            for(let id of exchangeState.offered){
+                document.getElementById(`supercard-offered-${id}`).remove();
+            }
+            for(let id of exchangeState.wanted){
+                document.getElementById(`supercard-wanted-${id}`).remove();
+            }
             exchangeState.swap();
-            window.location.reload();
+            showState();
         }
 
         // Takes the card's id to show and the operation associated
@@ -232,7 +300,63 @@
             }
         }
 
+        function getTrades(){
+            const options = {
+                "method": "GET",
+                "headers": {
+                    "Content-Type": "application/json",
+                }
+            };
+
+            fetch(`${url_backend}/exchange/trades/${user_id}`, options)
+                .then(response => {
+                    if(response.ok){
+                        response.json().then(json => {
+                            showTrades(json);
+                        })
+                    }
+                });
+        }
+        
+
+        function showTrades(trades){
+            let template = document.getElementById("template_trade");
+            let cont = template.parentNode;
+
+            // clean before inserting
+            cont.innerHTML = "";
+            cont.appendChild(template);
+
+            for(let trade of trades){   
+                let clone = template.cloneNode(true);
+
+                let titleButton = clone.getElementsByTagName("button")[0];
+                let body = clone.getElementsByClassName("accordion-body")[0];
+                let id = trade._id;
+
+                // display the data of the trade
+                titleButton.innerHTML = id;
+                body.innerHTML = trade.offerer+"<br>";
+                body.innerHTML += trade.wanter+"<br>";
+                for(let o of trade.offers)
+                    body.innerHTML += o+"<br>";
+                for(let w of trade.wants)
+                    body.innerHTML += w+"<br>";
+
+                // fix the accordion's collapse id
+                
+                clone.getElementsByClassName("accordion-collapse")[0].id = `${id}`;
+                titleButton.attributes.getNamedItem("data-bs-target").value = `#${id}`;
+                titleButton.attributes.getNamedItem("aria-controls").value = `${id}`;
+
+                clone.classList.remove("d-none");
+
+                template.parentNode.appendChild(clone);
+            }
+        }
+
         showState();
+        getTrades();
     </script>
 </body>
 </html>

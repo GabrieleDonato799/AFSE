@@ -416,7 +416,58 @@ async function buyOffer(req, res, uid){
             // update user balance
         }
 
-        res.json({ok: "ok"});
+        res.json({error: "success"});
+    }catch(e){
+        console.log("MongoDB overloaded?");
+        console.log(e);
+    }finally{
+        await mConn.close();
+    }
+}
+
+async function createTrade(req, res){
+    const mConn = await client.connect();
+    const offerer = req.body.offerer;
+    // const wanter = req.body.wanter;
+    const offers = req.body.offers;
+    const wants = req.body.wants;
+
+    try{
+        let trade = await mConn.db(DB_NAME).collection("trades").insertOne(
+            {
+                offerer: ObjectId.createFromHexString(offerer),
+                wanter: null,
+                offers: offers,
+                wants: wants
+            }
+        );
+        console.log(trade);
+
+        res.json({error: "success"});
+    }catch(e){
+        console.log("MongoDB overloaded?");
+        console.log(e);
+    }finally{
+        await mConn.close();
+    }
+}
+
+async function getTrades(req, res, uid){
+    const mConn = await client.connect();
+    let trades = [];
+
+    try{
+        let response = await mConn.db(DB_NAME).collection("trades").find(
+            {
+                $or: [{offerer: ObjectId.createFromHexString(uid)}, {wanter: ObjectId.createFromHexString(uid)}]
+            }
+        );
+        for await (let t of response){
+            trades.push(t);
+        }
+        console.log(trades);
+
+        res.json(trades);
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
@@ -497,6 +548,21 @@ app.post("/offers/buy/:uid", (req, res) => {
     }
     buyOffer(req, res, uid);
 })
+
+// exchange route
+app.post("/exchange/trade", (req, res) => {
+    createTrade(req, res);
+});
+
+app.get("/exchange/trades/:uid", (req, res) => {
+    var uid = req.params.uid;
+    if(uid === undefined){
+        res.status(400);
+        res.json({error: "missing uid"});
+        return;
+    }
+    getTrades(req, res, uid);
+});
 
 // start the server
 app.listen(PORT, HOST, () => {
