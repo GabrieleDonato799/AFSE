@@ -23,17 +23,20 @@
             height: 400px;
         }
     </style>
+    <link rel="stylesheet" href="main.css" type="text/css"></link>
 </head>
 
 <body class="bg-info">
     <div class="container">
         <nav id="navbar"></nav>
+        <div class="divider-half"></div>
+        
         <div class="row d-flex justify-content-between">
             <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>
             <button class="col btn bg-light" onclick='nextPage();'>Pagina successiva</button>
             <button id="exchange_button" class="col btn bg-light d-none" onclick='backToExchange();'>Back to exchange</button>
         </div>
-        
+        <div class="divider-half"></div>
         <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
             <div id="supercard" onclick="select(this);" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
                 <h6 id="card_title" class="card-title text-light text-center"></h6>
@@ -47,6 +50,7 @@
             </div>
         </div>
     </div>
+    <div class="divider-half"></div>
     <div class="container bg-info">
         <div class="row d-flex justify-content-between">
             <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>

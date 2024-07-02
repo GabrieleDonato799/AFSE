@@ -194,6 +194,14 @@ const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
             return state[op].size;
         }
 
+        // An exchange is complete if the user has selected both an offering
+        // and a wanted card
+        isComplete(){
+            let state = this.#retrieveState();
+
+            return (state.offered.size > 0 && state.wanted.size > 0);
+        }
+
         // Returns a deep copy of the exchangeState in LocalStorage with js Sets to
         // prevent duplicating supercard
         #retrieveState(){

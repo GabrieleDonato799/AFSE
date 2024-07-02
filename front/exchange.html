@@ -26,6 +26,7 @@
             height: 400px;
         }
     </style>
+    <link rel="stylesheet" href="main.css" type="text/css"></link>
 </head>
 
 <body class="bg-info">
@@ -45,6 +46,7 @@
 
     <div class="container">
         <nav id="navbar"></nav>
+        <div class="divider-half"></div>
 
         <div class="row d-flex align-items-center">
             <div class="col">
@@ -121,7 +123,10 @@
 
         // Exchanges the selected cards
         function exchange(){
-
+            if(!exchangeState.isComplete()){
+                console.log("Exchange is not complete!");
+                return;
+            }
         }
 
         // clears all the selected figures
