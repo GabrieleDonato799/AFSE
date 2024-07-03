@@ -22,9 +22,9 @@
         </div>
         <div class="divider-half"></div>
         <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
-            <div id="supercard" onclick="select(this);" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
-                <h6 id="card_title" class="card-title text-light text-center"></h6>
-                <img id="card_image" src="" class="card-img-top card-img" alt="...">
+            <div id="supercard" onclick="select(this);" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
+                <h6 id="card_title" class="card-title text-light text-center supercard-title"></h6>
+                <img id="card_image" src="" class="card-img-top card-img supercard-img" alt="...">
                 <!-- <div class="card-body">
                     <p id="card_overview" class="card-text"></p>
                 </div> -->
@@ -83,6 +83,19 @@
             container.innerHTML = "";
             container.append(card);
 
+            
+           
+
+            // for(let sub of ["LEGO Marvel Super Heroes", "Ultimate", "Marvel War of Heroes", "Marvel: Avengers Alliance", "HAS", "MAA", "Deadpool", "House of M", "Age of Apocalypse", "X-Men: Battle of the Atom", "Iron Man 3 - The Official Game", "Marvel Heroes", "Marvel Zombies", "USM"]){
+            //     let count =0;
+            //     for (let i = 0; i < response.length; i++) {
+            //         let superhero = response[i];
+            //         if(superhero.name.includes(sub)) count++;
+            //     }
+            //     console.log(`${sub}: ${count}`);
+            // }
+
+            // for (let i = 0; i < response.length; i++) {
             for (i = page*PAGE_SIZE; i < Math.min(response.length, (page+1)*PAGE_SIZE); i++) {
                 let superhero = response[i];
 

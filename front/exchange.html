@@ -13,17 +13,17 @@
 
 <body class="bg-info">
     <!-- supercards -->
-    <div id="supercard" class="card col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
+    <div id="supercard" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
         
-        <h6 id="card_title" class="card-title text-light text-center"></h6>
+        <h6 id="card_title" class="card-title supercard-title text-light text-center"></h6>
         <svg onclick="remove(this);" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-file-excel-fill" viewBox="0 0 16 16"><path d="M12 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2M5.884 4.68 8 7.219l2.116-2.54a.5.5 0 1 1 .768.641L8.651 8l2.233 2.68a.5.5 0 0 1-.768.64L8 8.781l-2.116 2.54a.5.5 0 0 1-.768-.641L7.349 8 5.116 5.32a.5.5 0 1 1 .768-.64"/></svg>
-        <img id="card_image" src="" class="card-img-top card-img" alt="...">
+        <img id="card_image" src="" class="card-img-top card-img supercard-img" alt="...">
         <!-- <div class="card-body">
             <p id="card_overview" class="card-text"></p>
         </div> -->
-        <!-- <div class="card-footer">
+        <div class="card-footer">
             <a href="supercard.html" class="btn btn-primary">Dettagli</a>
-        </div> -->
+        </div>
     </div>
 
     <div class="container">
@@ -149,25 +149,6 @@
                             clearState();
                             console.log(json);
                             getTrades();
-                            // if(json.result === undefined) return;
-
-                            // let superhero = json.result;
-                            // let clone = card.cloneNode(true);
-                            // clone.id = `supercard-${op}-` + cid;
-
-                            // title = clone.getElementsByClassName('card-title')[0];
-                            // overview = clone.getElementsByClassName('card-text')[0];
-                            // image = clone.getElementsByClassName('card-img-top')[0];
-                            // button = clone.getElementsByClassName('btn-primary')[0];
-
-                            // title.innerHTML = superhero.name;
-                            // image.src = superhero['thumbnail'];
-
-                            // // set the rarity color on the supercard
-                            // clone.style.backgroundColor = `#${superhero.rarity}`;
-
-                            // clone.classList.remove('d-none')
-                            // container.appendChild(clone);
                         })
                     }
                 });
