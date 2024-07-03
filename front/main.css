@@ -1,3 +1,22 @@
+.supercard {
+    width: 250px;
+    height: 400px;
+}
+
+.supercard-img {
+    object-fit: cover;
+    min-width: 1px;
+    max-width: inherit;
+    min-height: 1px;
+    max-height: inherit;
+    height: inherit;
+    width: inherit;
+}
+
+.supercard-title {
+    min-height: 2em;
+}
+
 .divider {
     height: 3em;
 }
