@@ -54,6 +54,7 @@ app.use(waitMarvelData);
 app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use(express.static(__dirname + '/../front')); // Tell express from where it should deliver the static content
 
 function hashSha256(input){
     return crypto.createHash('sha256')
