@@ -26,8 +26,11 @@ var marvelCharacters = undefined;
 
 getMarvelCharacters().then((res) =>{
     marvelCharacters = res;
+    console.log(`Downloaded the Marvel' characters`);
 });
 
+// Sometimes there can be connection errors or expiring sessions,
+// I want to manage them to avoid service interruption.
 var client = new MongoClient(mAtlasURI);
 process.on('uncaughtException', function(err) {
     if(err.name == "MongoTopologyClosedError" ||
@@ -432,17 +435,18 @@ async function createTrade(req, res){
     const offers = req.body.offers;
     const wants = req.body.wants;
 
-    try{
-        let trade = await mConn.db(DB_NAME).collection("trades").insertOne(
-            {
-                offerer: ObjectId.createFromHexString(offerer),
-                wanter: null,
-                offers: offers,
-                wants: wants
-            }
-        );
-        console.log(trade);
+    let trade = undefined;
 
+    try{
+        trade = {
+            offerer: ObjectId.createFromHexString(offerer),
+            wanter: null,
+            offers: offers,
+            wants: wants
+        };
+
+        await mConn.db(DB_NAME).collection("trades").insertOne(trade);
+        
         res.json({error: "success"});
     }catch(e){
         console.log("MongoDB overloaded?");
@@ -450,6 +454,12 @@ async function createTrade(req, res){
     }finally{
         await mConn.close();
     }
+
+    // try to automatically match the trade
+    if(trade !== undefined)
+        await matchTrade(trade);
+
+    return res;
 }
 
 async function getTrades(req, res, uid){
@@ -465,9 +475,30 @@ async function getTrades(req, res, uid){
         for await (let t of response){
             trades.push(t);
         }
-        console.log(trades);
 
         res.json(trades);
+    }catch(e){
+        console.log("MongoDB overloaded?");
+        console.log(e);
+    }finally{
+        await mConn.close();
+    }
+}
+
+async function matchTrade(trade){
+    const mConn = await client.connect();
+    let trades = [];
+
+    try{
+        let response = await mConn.db(DB_NAME).collection("trades").find(
+            {
+                offers: {$all: [...trade.wants]},
+            }
+        );
+        for await (let t of response){
+            trades.push(t);
+        }
+        // console.log(trades);
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
@@ -551,7 +582,7 @@ app.post("/offers/buy/:uid", (req, res) => {
 
 // exchange route
 app.post("/exchange/trade", (req, res) => {
-    createTrade(req, res);
+    let trade = createTrade(req, res);
 });
 
 app.get("/exchange/trades/:uid", (req, res) => {
