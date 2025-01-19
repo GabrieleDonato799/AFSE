@@ -179,14 +179,16 @@ function determineRarityColors(rarities){
  * Ottieni un utente specifico per ID dal database
  */
 async function getUser(id) {
+    let user = null;
+    const mConn = await client.connect();
+
     try {
-        const mConn = await client.connect();
-        const user = await mConn.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
-        return user;
+        user = await mConn.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
     }catch(e){
         console.log("MongoDB overloaded?");
     }finally{
         await mConn.close();
+        return user;
     }
 }
 
