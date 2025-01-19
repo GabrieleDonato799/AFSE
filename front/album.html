@@ -83,9 +83,6 @@
             container.innerHTML = "";
             container.append(card);
 
-            
-           
-
             // for(let sub of ["LEGO Marvel Super Heroes", "Ultimate", "Marvel War of Heroes", "Marvel: Avengers Alliance", "HAS", "MAA", "Deadpool", "House of M", "Age of Apocalypse", "X-Men: Battle of the Atom", "Iron Man 3 - The Official Game", "Marvel Heroes", "Marvel Zombies", "USM"]){
             //     let count =0;
             //     for (let i = 0; i < response.length; i++) {
@@ -106,9 +103,11 @@
                 overview = clone.getElementsByClassName('card-text')[0];
                 image = clone.getElementsByClassName('card-img-top')[0];
                 button = clone.getElementsByClassName('btn-primary')[0];
+                footer = clone.getElementsByClassName('card-footer')[0];
 
                 title.innerHTML = superhero.name;
                 image.src = superhero['thumbnail'];
+                footer.firstElementChild.search = `?cid=${superhero.id}`;
 
                 // set the rarity color on the supercard
                 clone.style.backgroundColor = `#${superhero.rarity}`;
@@ -119,14 +118,7 @@
         }
 
         async function getUserAlbum(){
-            const options = {
-                "method": "GET",
-                "headers": {
-                    "Content-Type": "application/json",
-                }
-            };
-
-            await fetch(`${url_backend}/album/${user_id}`, options)
+            await fetch(`${url_backend}/album/${user_id}`, optionsGET)
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {

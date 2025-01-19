@@ -1,7 +1,17 @@
 const url_backend = "http://localhost:3005"
 const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
+const optionsGET = {
+    method: 'GET',
+    headers: {
+        "Content-Type": "application/json"
+    },
+};
 
 (function(exports){
+    exports.url_backend = url_backend;
+    exports.MAX_SELECTED_CARDS_EXCHANGE_PER_OP = MAX_SELECTED_CARDS_EXCHANGE_PER_OP;
+    exports.optionsGET = optionsGET;
+
     // A memoized function never repeats the same calculations twice
     exports.memoize = function (fn) {
         var cache = [];

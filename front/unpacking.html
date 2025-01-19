@@ -28,14 +28,7 @@
         if(user_id === undefined) throw new Error("Unauthorized");
 
         function openPacket(){
-            const options = {
-                "method": "GET",
-                "headers": {
-                    "Content-Type": "application/json",
-                }
-            };
-
-            fetch(`${url_backend}/packets/${user_id}`, options)
+            fetch(`${url_backend}/packets/${user_id}`, optionsGET)
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {

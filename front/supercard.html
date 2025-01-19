@@ -12,7 +12,59 @@
 		<div class="container">
 			<nav id="navbar"></nav>
 			<div class="divider-half"></div>
-			
+			<div id="supercard" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
+				<h6 id="card_title" class="card-title text-light text-center supercard-title"></h6>
+				<img id="card_image" src="" class="card-img-top card-img supercard-img" alt="...">
+				<div class="card-footer">
+					<a href="supercard.html" class="btn btn-primary">Dettagli</a>
+				</div>
+			</div>
+			<div id="card_description" class="col-6"></div>
+			<div class="mb-2">
+				<h1>Comics</h1>
+			</div>
+			<div class="row">
+				<div id="comics" class="col-md-4 col-sm-6 d-none">
+					<div class="card h-100">
+						<div class="card-title"></div>
+						<img class="card-img-top"
+							onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+						<div class="card-body">
+							<p class="card-text"></p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mb-2">
+				<h1>Series</h1>
+			</div>
+			<div class="row">
+				<div id="series" class="col-md-4 col-sm-6 d-none">
+					<div class="card h-100">
+						<div class="card-title"></div>
+						<img class="card-img-top"
+							onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+						<div class="card-body">
+							<p class="card-text"></p>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="mb-2">
+				<h1>Events</h1>
+			</div>
+			<div class="row">
+				<div id="events" class="col-md-4 col-sm-6 d-none">
+					<div class="card h-100">
+						<div class="card-title"></div>
+						<img class="card-img-top"
+							onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+						<div class="card-body">
+							<p class="card-text"></p>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</body>
 
@@ -20,10 +72,84 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
-	<script src="shared/api_marvel.js"></script>
+		<script src="shared/lib.js"></script>
+		<script src="shared/api_marvel.js"></script>
 	<script>
-        var params = new URLSearchParams(window.location);
-        
-        params.get("")
+		var params = new URLSearchParams(window.location.search);
+
+		// Takes the character and the type of content to display ("comics"/"series"/"events"), creates six cards of the specified content and adds them to the page.
+		async function showContent(character, type){
+			if(typeof(type) !== "string") {console.log(`[showContent] invalid type`); return;}
+			let originalCard = document.getElementById(type);
+			
+			// retrieve the content and add a card asynchronously
+			fetch(`${url_backend}/characters/${character.id}/${type}`, optionsGET)
+			.then(res => {
+				if(res.ok){
+					content = res.json()
+						.then(json => {
+							console.log(json);
+							let content = json.results;
+
+							for(let i=0; i<6 && i<content.length; i++){
+								let card = originalCard.cloneNode(true);
+								let description = content[i].description;
+
+								card.id = `${type}-${i}`;
+								card.getElementsByClassName("card-title")[0].innerText = `${content[i].title}`;
+								card.getElementsByClassName("card-img-top")[0].src = `${content[i].thumbnail.path}.${content[i].thumbnail.extension}`;
+								if(description !== null)
+									card.getElementsByClassName("card-text")[0].innerText = `${content[i].description}`;
+								card.classList.remove('d-none');
+								originalCard.parentNode.insertBefore(card, null);
+							}
+						});
+					}
+				}).catch(err => console.error(err));
+		}
+
+		function getContent(cid){
+			fetch(`${url_backend}/characters/${cid}`, optionsGET)
+				.then(response => {
+					if(response.ok){
+						response.json().then(json => {
+							// This could be parallelized!
+							showSupercard(json.result);
+							showContent(json.result, "comics");
+							showContent(json.result, "series");
+							showContent(json.result, "events");
+						})
+					}else{
+						response.json().then(error => {
+							console.log(`Invalid character ${error.error}`);
+						})
+					}
+				}).catch(err => {
+				});
+		}
+
+		function showSupercard(superhero){
+            card = document.getElementById('supercard');
+			card.id = 'supercard-' + superhero.id;
+
+			title = card.getElementsByClassName('card-title')[0];
+			overview = card.getElementsByClassName('card-text')[0];
+			image = card.getElementsByClassName('card-img-top')[0];
+			button = card.getElementsByClassName('btn-primary')[0];
+			footer = card.getElementsByClassName('card-footer')[0];
+			card_description = document.getElementById("card_description");
+			
+			title.innerHTML = superhero.name;
+			image.src = superhero['thumbnail'];
+			footer.firstElementChild.search = `?cid=${superhero.id}`;
+			card_description.innerText = `${superhero.description}`;
+
+			// set the rarity color on the supercard
+			card.style.backgroundColor = `#${superhero.rarity}`;
+
+			card.classList.remove('d-none')
+		}
+
+		getContent(params.get("cid"));
 	</script>
 </html>

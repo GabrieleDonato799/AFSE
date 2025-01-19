@@ -510,6 +510,40 @@ async function matchTrade(trade){
     }
 }
 
+
+async function getCharacterContent(contentType, cid, req, res){
+    // retrieve the data from Marvel
+    await api_marvel.getFromMarvel(`public/characters/${cid}/${contentType}`, "")
+        .then(response => {
+            if(response.code === 200){
+                res.json(response.data);
+            }
+            else{
+                res.status(500);
+                res.json({error: "error during data retrieval"});
+            }
+        });
+}
+
+// Takes the cid string, taken from the get parameters, to be parsed and the server response.
+// Returns -1 on error, the cid as a Number otherwise.
+function checkCid(cid, res){
+    if(cid === undefined){
+        res.status(400);
+        res.json({error: "missing cid"});
+        return -1;
+    }
+    try{
+        cid = Number.parseInt(cid);
+    }catch(e){
+        res.status(400);
+        res.json({error: "cid is not a number"});
+        return -1;
+    }
+
+    return cid;
+}
+
 // account routes
 app.post('/account/login', (req, res) => {
     const body = req.body;
@@ -553,19 +587,30 @@ app.get("/packets/:uid", (req, res) =>{
 // characters routes
 app.get("/characters/:cid", (req, res) => {
     var cid = req.params.cid;
-    if(cid === undefined){
-        res.status(400);
-        res.json({error: "missing cid"});
-        return;
-    }
-    try{
-        cid = Number.parseInt(cid);
-    }catch(e){
-        res.status(400);
-        res.json({error: "cid is not a number"});
-        return;
-    }
+    if((cid = checkCid(cid, res)) === -1) return;
+
     res.json({result: getMarvelCharacterById(cid)});
+});
+
+app.get("/characters/:cid/comics", (req, res) => {
+    var cid = req.params.cid;
+    if((cid = checkCid(cid, res)) === -1) return;
+
+    getCharacterContent("comics", cid, req, res);
+});
+
+app.get("/characters/:cid/series", (req, res) => {
+    var cid = req.params.cid;
+    if((cid = checkCid(cid, res)) === -1) return;
+
+    getCharacterContent("series", cid, req, res);
+});
+
+app.get("/characters/:cid/events", (req, res) => {
+    var cid = req.params.cid;
+    if((cid = checkCid(cid, res)) === -1) return;
+
+    getCharacterContent("events", cid, req, res);
 });
 
 // offers for coins and supercards packets route

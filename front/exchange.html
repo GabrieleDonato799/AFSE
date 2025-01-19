@@ -93,14 +93,7 @@
         if(user_id === undefined) throw new Error("Unauthorized");
 
         async function getUserAlbum(container){
-            const options = {
-                "method": "GET",
-                "headers": {
-                    "Content-Type": "application/json",
-                }
-            };
-
-            await fetch(`${url_backend}/album/${user_id}`, options)
+            await fetch(`${url_backend}/album/${user_id}`, optionsGET)
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {
@@ -194,14 +187,7 @@
             let container = document.getElementById(`container_${op}`);
 
             for(let cid of cards){
-                const options = {
-                    "method": "GET",
-                    "headers": {
-                        "Content-Type": "application/json",
-                    }
-                };
-
-                fetch(`${url_backend}/characters/${cid}`, options)
+                fetch(`${url_backend}/characters/${cid}`, optionsGET)
                     .then(response => {
                         if(response.ok){
                             response.json().then(json => {
@@ -264,14 +250,7 @@
         }
 
         function getTrades(){
-            const options = {
-                "method": "GET",
-                "headers": {
-                    "Content-Type": "application/json",
-                }
-            };
-
-            fetch(`${url_backend}/exchange/trades/${user_id}`, options)
+            fetch(`${url_backend}/exchange/trades/${user_id}`, optionsGET)
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {
