@@ -83,37 +83,35 @@
             container.innerHTML = "";
             container.append(card);
 
-            // for(let sub of ["LEGO Marvel Super Heroes", "Ultimate", "Marvel War of Heroes", "Marvel: Avengers Alliance", "HAS", "MAA", "Deadpool", "House of M", "Age of Apocalypse", "X-Men: Battle of the Atom", "Iron Man 3 - The Official Game", "Marvel Heroes", "Marvel Zombies", "USM"]){
-            //     let count =0;
-            //     for (let i = 0; i < response.length; i++) {
-            //         let superhero = response[i];
-            //         if(superhero.name.includes(sub)) count++;
-            //     }
-            //     console.log(`${sub}: ${count}`);
-            // }
-
-            // for (let i = 0; i < response.length; i++) {
             for (i = page*PAGE_SIZE; i < Math.min(response.length, (page+1)*PAGE_SIZE); i++) {
-                let superhero = response[i];
+                let hero_id = response[i];
 
-                clone = card.cloneNode(true);
-                clone.id = 'supercard-' + superhero.id;
+                // query the superhero
+                fetch(`${url_backend}/characters/${hero_id}`, optionsGET)
+                    .then((res) => {
+                        res.json().then((superhero) => {
+                            console.log(superhero);
+                            clone = card.cloneNode(true);
+                            clone.id = 'supercard-' + superhero.id;
 
-                title = clone.getElementsByClassName('card-title')[0];
-                overview = clone.getElementsByClassName('card-text')[0];
-                image = clone.getElementsByClassName('card-img-top')[0];
-                button = clone.getElementsByClassName('btn-primary')[0];
-                footer = clone.getElementsByClassName('card-footer')[0];
+                            title = clone.getElementsByClassName('card-title')[0];
+                            overview = clone.getElementsByClassName('card-text')[0];
+                            image = clone.getElementsByClassName('card-img-top')[0];
+                            button = clone.getElementsByClassName('btn-primary')[0];
+                            footer = clone.getElementsByClassName('card-footer')[0];
 
-                title.innerHTML = superhero.name;
-                image.src = superhero['thumbnail'];
-                footer.firstElementChild.search = `?cid=${superhero.id}`;
+                            title.innerHTML = superhero.name;
+                            image.src = superhero['thumbnail'];
+                            footer.firstElementChild.search = `?cid=${superhero.id}`;
 
-                // set the rarity color on the supercard
-                clone.style.backgroundColor = `#${superhero.rarity}`;
+                            // set the rarity color on the supercard
+                            // clone.style.backgroundColor = `#${superhero.rarity}`;
+                            clone.style.backgroundColor = "#1aa3ff";
 
-                clone.classList.remove('d-none')
-                card.before(clone)
+                            clone.classList.remove('d-none')
+                            card.before(clone)
+                        });
+                    });
             }
         }
 
@@ -122,7 +120,7 @@
                 .then(response => {
                     if(response.ok){
                         response.json().then(json => {
-                            userAlbum = json['supercards'];
+                            userAlbum = json;
                             showSupercards(userAlbum);
                         })
                     }
