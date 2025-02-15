@@ -7,15 +7,15 @@ const { ObjectId } = require('mongodb');
  */
 async function getUser(id) {
     let user = null;
-    const mConn = await client.connect();
 
     try {
-        user = await mConn.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
+    	// await client.connect();
+        user = await client.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
     }catch(e){
         console.log(e);
         console.log("MongoDB overloaded?");
     }finally{
-        await mConn.close();
+        // await client.close();
     }
 
     return user;
@@ -25,9 +25,9 @@ async function getUser(id) {
  * Elimina un utente per ID dal database
  */
 // async function deleteUser(res, id) {
-//     const mConn = await client.connect();
-//     const result = await mConn.db(DB_NAME).collection("users").deleteOne({ _id: ObjectId.createFromHexString(id) });
-//     await mConn.close();
+//     const client = await client.connect();
+//     const result = await client.db(DB_NAME).collection("users").deleteOne({ _id: ObjectId.createFromHexString(id) });
+//     await client.close();
 //     res.json(result);
 // }
 
@@ -49,10 +49,9 @@ async function addUser(res, user) {
 
     user.password = hashSha256(user.password)
 
-    const mConn = await client.connect();
     try {
         // Inserisce il nuovo utente nel database
-        await mConn.db(DB_NAME).collection("users").findOne(
+        await client.db(DB_NAME).collection("users").findOne(
             {email:user.email}
         )
         .then(response => {
@@ -67,8 +66,7 @@ async function addUser(res, user) {
             }
         });
 
-        const insertedUser = await mConn.db(DB_NAME).collection("users").insertOne(user);
-        await mConn.close();
+        const insertedUser = await client.db(DB_NAME).collection("users").insertOne(user);
         createUserAlbum(insertedUser.insertedId);
         res.status(201).json({"_id":user._id});
     } catch (e) {
@@ -77,8 +75,6 @@ async function addUser(res, user) {
         } else {
             res.status(500).json({ error: `Generic error: ${e.code}` });
         }
-    } finally {
-        await mConn.close();
     }
 }
 
@@ -98,19 +94,22 @@ async function loginUser(res, body) {
 
     body.password = hashSha256(body.password);
 
-    const mConn = await client.connect();
-    // Cerca un utente con l'email e la password specificate
-    const user = await mConn.db(DB_NAME).collection("users").findOne({
-        email: body.email,
-        password: body.password
-    });
-    await mConn.close();
-
-    if (user) {
-        res.json({ id: user._id });
-    } else {
-        res.status(404).json({ error: "Credenziali Errate" });
-    }
+	try{
+    	// Cerca un utente con l'email e la password specificate
+    	const user = await client.db(DB_NAME).collection("users").findOne({
+    	    email: body.email,
+    	    password: body.password
+    	});
+    	if (user) {
+    	    res.json({ id: user._id });
+    	} else {
+    	    res.status(404).json({ error: "Credenziali Errate" });
+    	}
+	}
+	catch(e){
+		console.log(e);
+		res.status(404).json({ error: "Error connecting to the database" });
+	}
 }
 
 async function getUserBalance(res, uid){

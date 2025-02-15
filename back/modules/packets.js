@@ -7,12 +7,11 @@ async function generatePacket(res, uid){
     let packet = [];
     let userBalance = 0; 
     
-    const mConn = await client.connect();
     // TODO: Atomically check the user's balance and update its album if it is not full
     try{
         // retrieves the user balance
         // FIND
-        userBalance = await mConn.db(DB_NAME).collection("users").findOne(
+        userBalance = await client.db(DB_NAME).collection("users").findOne(
             {user_id: ObjectId.createFromHexString(uid)},
         ).balance;
 
@@ -31,13 +30,13 @@ async function generatePacket(res, uid){
         
         // UPDATE DOCUMENT IN A DIFFERENT COLLECTION
         // Updates the user album
-        console.log(await mConn.db(DB_NAME).collection("albums").updateOne(
+        console.log(await client.db(DB_NAME).collection("albums").updateOne(
             {user_id: ObjectId.createFromHexString(uid)},
             {$addToSet: {supercards: {$each: packet}}}
         ));
 
         // UPDATE
-        console.log(await mConn.db(DB_NAME).collection("users").updateOne(
+        console.log(await client.db(DB_NAME).collection("users").updateOne(
             {_id: ObjectId.createFromHexString(uid)},
             {$inc: {balance: -1}}
         ));
@@ -46,8 +45,6 @@ async function generatePacket(res, uid){
     }catch(e){
         console.log(e);
         console.log("MongoDB overloaded?");
-    }finally{
-        await mConn.close();
     }
 }
 

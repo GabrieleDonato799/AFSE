@@ -2,11 +2,10 @@ const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
 
 async function getOffers(res){
-    const mConn = await client.connect();
     var offers = [];
 
     try{
-        let response = await mConn.db(DB_NAME).collection("offers").find();
+        let response = client.db(DB_NAME).collection("offers").find();
         // console.log(offers);
         for await (let o of response){
             offers.push(o);
@@ -15,25 +14,22 @@ async function getOffers(res){
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
-    }finally{
-        await mConn.close();
     }
 }
 
 async function buyOffer(req, res, uid){
-    const mConn = await client.connect();
     const id = req.body.id;
 
     try{
         // retrieve the corresponding offer
-        let offer = await mConn.db(DB_NAME).collection("offers").findOne(
+        let offer = await client.db(DB_NAME).collection("offers").findOne(
             {_id: ObjectId.createFromHexString(id)}
         );
         console.log(offer);
 
         // TODO: Atomically check the user's balance and update it accordingly
         if(offer.type === "coins"){
-            const albumLinked = await mConn.db(DB_NAME).collection("users").updateOne(
+            const albumLinked = await client.db(DB_NAME).collection("users").updateOne(
                 {_id: ObjectId.createFromHexString(uid)},
                 {$inc: {balance: offer.amount}}
             );
@@ -48,8 +44,6 @@ async function buyOffer(req, res, uid){
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
-    }finally{
-        await mConn.close();
     }
 }
 
@@ -66,4 +60,4 @@ app.post("/offers/buy/:uid", (req, res) => {
         return;
     }
     buyOffer(req, res, uid);
-})
+});

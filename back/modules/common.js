@@ -13,16 +13,7 @@ const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
 
 const app = express();
 
-// Sometimes there can be connection errors or expiring sessions,
-// I want to manage them to avoid service interruption.
 var client = new MongoClient(mAtlasURI);
-process.on('uncaughtException', function(err) {
-    if(err.name == "MongoTopologyClosedError" ||
-        err.name == "MongoExpiredSessionError"
-    ){
-        client = new MongoClient(mAtlasURI);
-    }
-})
 
 function hashSha256(input){
     return crypto.createHash('sha256')

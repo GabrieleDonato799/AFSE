@@ -1,3 +1,5 @@
+// const { url_backend, optionsGET } = require("./lib");
+
 var navbar = document.getElementById("navbar");
 		
 fetch("navbar.html")

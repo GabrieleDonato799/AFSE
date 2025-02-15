@@ -2,7 +2,6 @@ const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
 
 async function createTrade(req, res){
-    const mConn = await client.connect();
     const offerer = req.body.offerer;
     // const wanter = req.body.wanter;
     const offers = req.body.offers;
@@ -18,14 +17,12 @@ async function createTrade(req, res){
             wants: wants
         };
 
-        await mConn.db(DB_NAME).collection("trades").insertOne(trade);
+        await client.db(DB_NAME).collection("trades").insertOne(trade);
         
         res.json({error: "success"});
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
-    }finally{
-        await mConn.close();
     }
 
     // try to automatically match the trade
@@ -36,11 +33,10 @@ async function createTrade(req, res){
 }
 
 async function getTrades(req, res, uid){
-    const mConn = await client.connect();
     let trades = [];
 
     try{
-        let response = await mConn.db(DB_NAME).collection("trades").find(
+        let response = await client.db(DB_NAME).collection("trades").find(
             {
                 $or: [{offerer: ObjectId.createFromHexString(uid)}, {wanter: ObjectId.createFromHexString(uid)}]
             }
@@ -53,17 +49,14 @@ async function getTrades(req, res, uid){
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
-    }finally{
-        await mConn.close();
     }
 }
 
 async function matchTrade(trade){
-    const mConn = await client.connect();
     let trades = [];
 
     try{
-        let response = await mConn.db(DB_NAME).collection("trades").find(
+        let response = await client.db(DB_NAME).collection("trades").find(
             {
                 offers: {$all: [...trade.wants]},
             }
@@ -75,8 +68,6 @@ async function matchTrade(trade){
     }catch(e){
         console.log("MongoDB overloaded?");
         console.log(e);
-    }finally{
-        await mConn.close();
     }
 }
 

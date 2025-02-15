@@ -3,6 +3,7 @@ const cors = require('cors');
 const swaggerUi = require('swagger-ui-express');
 const swaggerDocument = require('./swagger-output.json');
 const { app } = require('./modules/common');
+require('isomorphic-fetch'); // prevents api_marvel.js from throwing an undefined error
 
 const HOST = "0.0.0.0";
 const PORT = 3005;

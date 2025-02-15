@@ -3,34 +3,29 @@ const { ObjectId } = require('mongodb');
 
 
 async function createUserAlbum(uid){
-    const mConn = await client.connect();
-    const hasAlbum = await mConn.db(DB_NAME).collection("albums").findOne({
+    const hasAlbum = await client.db(DB_NAME).collection("albums").findOne({
         user_id: uid 
     });
 
     if(hasAlbum) return;
 
-    const albumCreated = await mConn.db(DB_NAME).collection("albums").insertOne(
+    const albumCreated = await client.db(DB_NAME).collection("albums").insertOne(
         {
             user_id: uid,
             supercards: []
         }
     );
 
-    await mConn.db(DB_NAME).collection("users").updateOne(
+    await client.db(DB_NAME).collection("users").updateOne(
         {_id: uid},
         {$set: {album_id: albumCreated.insertedId}}
     );
-
-    await mConn.close();
 }
 
 async function getUserAlbum(res, uid){
-    const mConn = await client.connect();
-    const albumData = await mConn.db(DB_NAME).collection("albums").findOne({
+    const albumData = await client.db(DB_NAME).collection("albums").findOne({
         user_id: ObjectId.createFromHexString(uid) 
     });
-    await mConn.close();
 
     console.log(albumData);
 
