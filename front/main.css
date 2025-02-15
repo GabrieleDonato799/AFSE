@@ -24,3 +24,8 @@
 .divider-half {
     height: 1.5em;
 }
+
+.disabled-js {
+	pointer-events: none;
+	font-size: 3em;
+}
