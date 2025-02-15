@@ -115,6 +115,7 @@
                     if(response.ok){
                         response.json().then(json => {;
                             console.log(json);
+							getUserBalance();
                         })
                     }
                 });

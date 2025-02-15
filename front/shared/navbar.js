@@ -18,7 +18,24 @@ fetch("navbar.html")
                     }
                 }
             });
+
+			getUserBalance();
         }else{
             navbar.innerHTML = "ERROR: Couldn't fetch the navbar";
         }
     });
+
+async function getUserBalance(){
+	fetch(`${url_backend}/account/balance/${localStorage.getItem("user_id")}`, optionsGET)
+		.then(response => {
+			if(response.ok){
+				response.json().then(json => {
+					let counter = document.getElementById("coins-counter");
+					counter.innerHTML = json.balance; 
+				});
+			}
+			else{
+				console.log("Couldn't fetch the user's balance");
+			}
+		});
+}
