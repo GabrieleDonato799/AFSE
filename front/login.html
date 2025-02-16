@@ -11,9 +11,9 @@
 </head>
 
 <body>
-	<noscript>
-		<button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
-	</noscript>
+    <noscript>
+        <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
+    </noscript>
 
     <div class="container">
         <nav id="navbar"></nav>
@@ -39,8 +39,13 @@
         crossorigin="anonymous"></script>
     <script src="shared/lib.js"></script>
     <script>
+        const params = new URLSearchParams(window.location.search);
         let form = document.getElementById("loginForm");
         let alert = document.getElementById("loginAlert");
+
+        if(params.get("logout") !== null){
+            logout();
+        }
 
         // Checks if the details inserted in the login form are correct
         // otherwise it triggers allerts and disables submission
@@ -64,7 +69,7 @@
 
             return correct;
         }
-        
+
         // If it doesn't success it will trigger allerts to the user
         function login() {
             const options = {
@@ -92,6 +97,11 @@
                     }
                 })
                 .catch(err => console.error(err));
+        }
+
+        function logout(){
+            localStorage.removeItem("user_id");
+            window.location.href = "index.html";
         }
     </script>
 </body>

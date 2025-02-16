@@ -7,9 +7,13 @@ const { ObjectId } = require('mongodb');
  */
 async function getUser(id) {
     let user = null;
+    
+    if(id === null){
+        return null;
+    }
 
     try {
-    	// await client.connect();
+        // await client.connect();
         user = await client.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
     }catch(e){
         console.log(e);
@@ -48,6 +52,7 @@ async function addUser(res, user) {
     }
 
     user.password = hashSha256(user.password)
+    user.balance = 0;
 
     try {
         // Inserisce il nuovo utente nel database
@@ -94,22 +99,22 @@ async function loginUser(res, body) {
 
     body.password = hashSha256(body.password);
 
-	try{
-    	// Cerca un utente con l'email e la password specificate
-    	const user = await client.db(DB_NAME).collection("users").findOne({
-    	    email: body.email,
-    	    password: body.password
-    	});
-    	if (user) {
-    	    res.json({ id: user._id });
-    	} else {
-    	    res.status(404).json({ error: "Credenziali Errate" });
-    	}
-	}
-	catch(e){
-		console.log(e);
-		res.status(404).json({ error: "Error connecting to the database" });
-	}
+    try{
+        // Cerca un utente con l'email e la password specificate
+        const user = await client.db(DB_NAME).collection("users").findOne({
+            email: body.email,
+            password: body.password
+        });
+        if (user) {
+            res.json({ id: user._id });
+        } else {
+            res.status(404).json({ error: "Credenziali Errate" });
+        }
+    }
+    catch(e){
+        console.log(e);
+        res.status(404).json({ error: "Error connecting to the database" });
+    }
 }
 
 async function getUserBalance(res, uid){
