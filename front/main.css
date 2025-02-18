@@ -26,6 +26,6 @@
 }
 
 .disabled-js {
-	pointer-events: none;
-	font-size: 3em;
+    pointer-events: none;
+    font-size: 3em;
 }

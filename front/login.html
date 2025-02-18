@@ -23,11 +23,11 @@
         <form id="loginForm" method="POST" onsubmit="return false;">
             <div class="mb-3">
                 <label for="inputEmail" class="form-label">E-mail address</label>
-                <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+                <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" required>
             </div>
             <div class="mb-3">
                 <label for="inputPassword" class="form-label">Password</label>
-                <input name="password" type="password" class="form-control" id="inputPassword">
+                <input name="password" type="password" class="form-control" id="inputPassword" required>
             </div>
             <button type="submit" class="btn btn-primary" onclick="login();">Submit</button>
           </form>
@@ -90,7 +90,7 @@
                 .then(response => {
                     if(response.id === undefined){
                         alert.classList.remove("d-none");
-                        alert.innerHTML = "Internal server error, please retry later";
+                        alert.innerHTML = `${response.error}`;
                     }else{
                         localStorage.setItem("user_id", response.id);
                         window.location.href = "index.html";

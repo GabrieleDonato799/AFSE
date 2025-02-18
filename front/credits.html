@@ -11,9 +11,9 @@
 </head>
 
 <body class="bg-info">
-	<noscript>
-		<button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
-	</noscript>
+    <noscript>
+        <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
+    </noscript>
 
     <div class="container bg-dark">
         <nav id="navbar"></nav>
@@ -119,7 +119,7 @@
                     if(response.ok){
                         response.json().then(json => {;
                             console.log(json);
-							getUserBalance();
+                            getUserBalance();
                         })
                     }
                 });

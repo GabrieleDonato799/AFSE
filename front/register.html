@@ -11,9 +11,9 @@
 </head>
 
 <body>
-	<noscript>
-		<button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
-	</noscript>
+    <noscript>
+        <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
+    </noscript>
 
     <!-- navbar -->
     <div class="container">
@@ -23,20 +23,24 @@
         <div id="registerAlert" class="alert alert-danger d-none" role="alert"></div>          
         <form id="registerForm" method="POST" onsubmit="register(); return false;">
             <div class="mb-3">
+                <label for="inputNick" class="form-label">Nickname</label>
+                <input name="nick" type="text" class="form-control" id="inputNick" autocomplete="nickname" required>
+            </div>
+            <div class="mb-3">
                 <label for="inputEmail" class="form-label">E-mail address</label>
-                <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp">
+                <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" autocomplete="email" required>
             </div>
             <div class="mb-3">
                 <label for="inputEmailConfirm" class="form-label">Confirm the e-mail address</label>
-                <input name="emailConfirm" type="email" class="form-control" id="inputEmailConfirm" aria-describedby="emailHelp">
+                <input name="emailConfirm" type="email" class="form-control" id="inputEmailConfirm" autocomplete="email" aria-describedby="emailHelp" required>
             </div>
             <div class="mb-3">
                 <label for="inputPassword" class="form-label">Password</label>
-                <input name="password" type="password" class="form-control" id="inputPassword">
+                <input name="password" type="password" class="form-control" id="inputPassword" autocomplete="new-password" required>
             </div>
             <div class="mb-3">
                 <label for="inputPasswordConfirm" class="form-label">Confirm the password</label>
-                <input name="passwordConfirm" type="password" class="form-control" id="inputPasswordConfirm">
+                <input name="passwordConfirm" type="password" class="form-control" id="inputPasswordConfirm" autocomplete="new-password" required>
             </div>
             <button id="registerSubmit" type="submit" class="btn btn-primary">Submit</button>
           </form>
@@ -58,12 +62,17 @@
             let correct = true;
             alert.innerHTML = "";
 
+            if(!form.nick.value){
+                alert.innerHTML += "Missing nickname!<br>";
+                correct = false;
+            }
+
             if(form.email.value !== form.emailConfirm.value){
-                alert.innerHTML += "Le e-mail non corrispondono!<br>";
+                alert.innerHTML += "The emails don't match!<br>";
                 correct = false;
             }
             if(form.password.value !== form.passwordConfirm.value){
-                alert.innerHTML += "Le password non corrispondono!<br>";
+                alert.innerHTML += "The passwords don't match!<br>";
                 correct = false;
             }
 
@@ -84,6 +93,7 @@
                     "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
+                    "nick": form.nick.value,
                     "email": form.email.value,
                     "password": form.password.value
                 })
@@ -97,7 +107,7 @@
                         response.json().then(json => {
                             localStorage.setItem("user_id", json._id);
 
-                            alert.innerHTML = "Registrato con successo!";
+                            alert.innerHTML = "Successfully registered!";
                             alert.classList.add("alert-success");
                             alert.classList.remove("alert-danger");
                             alert.classList.remove("d-none");
