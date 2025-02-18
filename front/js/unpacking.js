@@ -1,0 +1,15 @@
+let user_id = localStorage.getItem("user_id");
+
+if(user_id === undefined) throw new Error("Unauthorized");
+
+function openPacket(){
+    fetch(`${url_backend}/packets/${user_id}`, optionsGET)
+        .then(response => {
+            if(response.ok){
+                response.json().then(json => {
+                    console.log(json);
+                })
+            }
+        });
+}
+openPacket();
