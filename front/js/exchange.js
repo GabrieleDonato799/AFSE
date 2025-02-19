@@ -1,3 +1,7 @@
+/**
+ * @module front/exchange
+ */
+
 var page = 1;
 var pageSize = 100;
 var user_id = localStorage.getItem("user_id");
@@ -7,29 +11,39 @@ var card = document.getElementById('supercard');
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
-async function getUserAlbum(container){
+/**
+ * Fetches the user's album and shows the cards on the page layout.
+ */
+async function getUserAlbum(){
     await fetch(`${url_backend}/album/${user_id}`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
                     userAlbum = json['supercards'];
-                    showSupercards(userAlbum, container);
+                    showSupercards(userAlbum);
                 })
             }
         });
 }
 
-// Adds an offered card to the left area
+/**
+ * Adds an offered card to the left area.
+ */
 function addOffered(){
     window.location.href = "album.html?op=offered";
 }
 
-// Adds a wanted card to the right area
+/**
+ * Adds a wanted card to the right area.
+ */
 function addWanted(){
     window.location.href = "album.html?op=wanted";
 }
 
-// Exchanges the selected cards
+/**
+ * Exchanges the selected cards.
+ * Doesn't return a value.
+ */
 function exchange(){
     if(!exchangeState.isComplete()){
         console.log("Exchange is not complete!");
@@ -62,7 +76,9 @@ function exchange(){
         });
 }
 
-// clears all the selected figures
+/**
+ * Clears all the selected cards.
+ */
 function clearState(){
     for(let id of exchangeState.offered){
         document.getElementById(`supercard-offered-${id}`).remove();
@@ -76,13 +92,18 @@ function clearState(){
     hideAddingCards();
 }
 
-// Show the current offered and wanted cards
+/**
+ * Show the current offered and wanted cards
+ */
 function showState(){
     showSelectedCards(exchangeState.offered, "offered");
     showSelectedCards(exchangeState.wanted, "wanted");
     hideAddingCards();
 }
 
+/**
+ * Swap the offered cards with the wanted ones.
+ */
 function swapState(){
     for(let id of exchangeState.offered){
         document.getElementById(`supercard-offered-${id}`).remove();
@@ -94,10 +115,12 @@ function swapState(){
     showState();
 }
 
-// Takes the card's id to show and the operation associated
-// to determine if they are offered or wanted, asks the backend
-// for the data to show.
-// Doesn't return anything
+/**
+ * Takes the array of cards' id to show and the operation associated to determine if they are offered or wanted, asks the backend for the data to show.
+ * Doesn't return anything.
+ * @param {Array} cards 
+ * @param {string} op 
+ */
 function showSelectedCards(cards, op){
     let container = document.getElementById(`container_${op}`);
 
@@ -132,7 +155,10 @@ function showSelectedCards(cards, op){
     }
 }
 
-// Removes the card
+/**
+ * Removes the card.
+ * @param {Element} callingElem 
+ */
 function remove(callingElem){
     let operation = callingElem.parentNode.id.split("-")[1];
     let hero_id = Number(callingElem.parentNode.id.split("-")[2]);
@@ -146,11 +172,18 @@ function remove(callingElem){
     hideAddingCards();
 }
 
-// Returns the string with the first letter capitalized
+/**
+ * Returns the string with the first letter capitalized.
+ * @param {string} string 
+ * @returns {string}
+ */
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+/**
+ * Hides the plus '+' cards that give the user the ability to add cards to the state.
+ */
 function hideAddingCards(){
     if(exchangeState.sizeOffered() >= MAX_SELECTED_CARDS_EXCHANGE_PER_OP){
         document.getElementById("supercard_offered").classList.add("d-none");
@@ -165,6 +198,9 @@ function hideAddingCards(){
     }
 }
 
+/**
+ * Fetches all the users trades and shows them to the page layout.
+ */
 function getTrades(){
     fetch(`${url_backend}/exchange/trades/${user_id}`, optionsGET)
         .then(response => {
@@ -176,7 +212,10 @@ function getTrades(){
         });
 }
 
-
+/**
+ * Takes the array of users traders and shows them to the page layout.
+ * @param {Array} trades 
+ */
 function showTrades(trades){
     let template = document.getElementById("template_trade");
     let cont = template.parentNode;

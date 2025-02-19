@@ -1,9 +1,16 @@
+/**
+ * @module front/credits
+ */
+
 let user_id = localStorage.getItem("user_id");
 let params = new URLSearchParams(window.location.search);
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
-// Takes the offers to buy coins or packets and build their page layout
+/**
+ * Takes the offers to buy coins or packets and adds them to the page layout.
+ * @param {Array} offers
+ */
 function showOffers(offers){
     card = document.getElementById('template_card');
 
@@ -27,6 +34,9 @@ function showOffers(offers){
     }
 }
 
+/**
+ * Retrieves all the offers for coins or packets and shows them on the page layout.
+ */
 async function getOffers(){
     await fetch(`${url_backend}/offers`, optionsGET)
         .then(response => {
@@ -38,12 +48,18 @@ async function getOffers(){
         });
 }
 
-// Sends back to the exchange page the selected cards
+/**
+ * Sends back to the exchange page the selected cards. 
+ */
 function backToExchange(){
     if(!exchangeState.checkOp(op)) return;
     window.location.href = `exchange.html`;
 }
 
+/**
+ * Takes the element of the offer clicked by the user and buys it.
+ * @param {Element} callingElem 
+ */
 function buyCoins(callingElem){
     let id = callingElem.parentNode.parentNode.parentNode.id.split("-")[1];
 

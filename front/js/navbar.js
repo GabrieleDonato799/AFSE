@@ -1,4 +1,7 @@
-// const { url_backend, optionsGET } = require("./lib");
+/**
+ * @module js/navbar
+ * @description Management of the navigation bar.
+ */
 
 var navbar = document.getElementById("navbar");
 
@@ -45,10 +48,19 @@ async function ifLogged(){
     }
 }
 
+/**
+ * Fetches the logged in user's balance and updates the navbar coins counter.
+ */
 async function getUserBalance(){
+    let counter = document.getElementById("coins-counter");
+    // check if user is logged in 
+    if(!localStorage.getItem("user_id")){
+        counter.innerHTML = "0 coins";
+        counter.parentElement.classList.remove('d-none');
+    }
+
     fetch(`${url_backend}/account/balance/${localStorage.getItem("user_id")}`, optionsGET)
         .then(response => {
-            let counter = document.getElementById("coins-counter");
             if(response.ok){
                 response.json().then(json => {
                     counter.innerHTML = `${json.balance} coins`;

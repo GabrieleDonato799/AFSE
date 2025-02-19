@@ -1,3 +1,7 @@
+/**
+ * @module back/common
+ */
+
 const crypto = require('crypto');
 const process = require('process');
 const express = require('express');

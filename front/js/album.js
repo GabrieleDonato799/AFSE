@@ -1,3 +1,6 @@
+/**
+ * @module front/album
+ */
 const MAX_SELECTED = 4;
 const PAGE_SIZE = 20;
 let page = 0;
@@ -25,6 +28,10 @@ function previousPage(){
     showSupercards(userAlbum);
 }
 
+/**
+ * Takes a fetch()' response and adds supercards to the DOM.
+ * @param {Response} response 
+ */
 function showSupercards(response){
     card = document.getElementById('supercard');
     container = document.getElementById('container');
@@ -62,7 +69,9 @@ function showSupercards(response){
             });
     }
 }
-
+/**
+ * Retrieves the user's album from the backend
+ */
 async function getUserAlbum(){
     await fetch(`${url_backend}/album/${user_id}`, optionsGET)
         .then(response => {
@@ -75,6 +84,9 @@ async function getUserAlbum(){
         });
 }
 
+/**
+ * Callback to select a card to be exchanged.
+ */
 function select(callingElem){
     if(!exchangeState.checkOp(op)) return;
 
@@ -89,7 +101,9 @@ function select(callingElem){
     }
 }
 
-// Sends back to the exchange page the selected cards
+/**
+ * Sends back to the exchange page the selected cards
+ */
 function backToExchange(){
     if(!exchangeState.checkOp(op)) return;
     window.location.href = `exchange.html`;

@@ -1,5 +1,6 @@
 old/
 node_modules/
+docs/
 .vscode/
 
 swagger-output.json

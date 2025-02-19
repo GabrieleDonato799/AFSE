@@ -2,17 +2,18 @@ const swaggerAutogen = require('swagger-autogen')({openapi: '3.0.0'});
 
 const doc = {
   info: {
-    title: 'Gestione Utenti',
-    description: 'Una semplice API per la gestione degli utenti'
+    title: 'Users management',
+    description: 'API endpoints to manage the user\'s resources,'
   },
   components: {
     schemas:{
         userSchema:{
-            $name: 'Valerio',
-            $surname: 'Bellandi',
-            $password: 'password',
-            email: 'valerio.bellandi@unimi.it',
-            $film_preferiti: []
+          $_id: "e8a8a1086935b255ed5ae2d2",
+          $email: "example.mail@example.com",
+          $password: "password",
+          $album_id: "242f01ed6c9a44b190274cf6",
+          $balance: "500",
+          $nick: "MyNickName",
         }
     }
   },

@@ -1,3 +1,7 @@
+/**
+ * @module back/offers
+ */
+
 const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
 

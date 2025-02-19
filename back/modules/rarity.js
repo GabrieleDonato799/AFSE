@@ -1,3 +1,7 @@
+/**
+ * @module back/rarity
+ */
+
 const { app } = require('./common.js');
 const lib = require('../../front/shared/lib.js')
 const api_marvel = require('../../front/shared/api_marvel.js');

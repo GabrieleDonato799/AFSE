@@ -1,3 +1,7 @@
+/**
+ * @module back/user
+ */
+
 const { app, client, DB_NAME, hashSha256 } = require('./common.js');
 const { createUserAlbum } = require('./album.js');
 const { ObjectId } = require('mongodb');

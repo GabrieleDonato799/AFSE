@@ -1,6 +1,14 @@
+/**
+ * @module front/supercard
+ */
+
 let params = new URLSearchParams(window.location.search);
 
-// Takes the character and the type of content to display ("comics"/"series"/"events"), creates six cards of the specified content and adds them to the page.
+/**
+ * Takes the character as returned from the Marvel API (data.result) and the type of content to display ("comics"/"series"/"events"), creates six cards of the specified content and adds them to the page. Doesn't return a value.
+ * @param {*} character 
+ * @param {string} type "comics"/"series"/"events"
+ */
 async function showContent(character, type){
     if(typeof(type) !== "string") {console.log(`[showContent] invalid type`); return;}
     if(!character[type].available) return;
@@ -35,12 +43,15 @@ async function showContent(character, type){
         }).catch(err => console.error(err));
 }
 
+/**
+ * Takes a character id (from Marvel API), fetches and shows to the page layout the character supercard and the comics, series and events associated.
+ * @param {string} cid
+ */
 function getContent(cid){
     fetch(`${url_backend}/characters/${cid}`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
-                    // This could be parallelized!
                     console.log(`[getContent] cid: ${cid}`);
                     console.log(json);
                     showSupercard(json);
@@ -57,6 +68,10 @@ function getContent(cid){
         });
 }
 
+/**
+ * Takes a superhero from the Marvel API and adds its supercard to the page layout.
+ * @param {Object} superhero 
+ */
 function showSupercard(superhero){
     let card = document.getElementById('supercard');
     card.id = 'supercard-' + superhero.id;

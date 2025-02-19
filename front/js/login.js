@@ -1,3 +1,7 @@
+/**
+ * @module front/login
+ */
+
 const params = new URLSearchParams(window.location.search);
 let form = document.getElementById("loginForm");
 let alert = document.getElementById("loginAlert");
@@ -6,8 +10,11 @@ if(params.get("logout") !== null){
     logout();
 }
 
-// Checks if the details inserted in the login form are correct
-// otherwise it triggers allerts and disables submission
+/**
+ * Checks if the details inserted in the login form are correct, if not it triggers allerts and disables submission.
+ * Returns whether the details are correct or not.
+ * @returns {boolean} 
+ */
 function checkDetails(){
     let correct = true;
     alert.innerHTML = "";
@@ -29,7 +36,11 @@ function checkDetails(){
     return correct;
 }
 
-// If it doesn't success it will trigger allerts to the user
+/**
+ * Attempts to login the user.
+ * If it doesn't succeed it will trigger allerts to the user.
+ * Assume it doesn't return a value
+ */
 function login() {
     const options = {
         method: 'POST',
@@ -58,6 +69,10 @@ function login() {
         .catch(err => console.error(err));
 }
 
+/**
+ * Logs out the user, always succeeds.
+ * Doesn't return a value.
+ */
 function logout(){
     localStorage.removeItem("user_id");
     window.location.href = "index.html";

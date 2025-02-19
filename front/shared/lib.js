@@ -1,3 +1,8 @@
+/**
+ * @module shared/lib
+ * @description Common utilities.
+ */
+
 const url_backend = "http://localhost:3005"
 const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
 const optionsGET = {
@@ -12,7 +17,11 @@ const optionsGET = {
     exports.MAX_SELECTED_CARDS_EXCHANGE_PER_OP = MAX_SELECTED_CARDS_EXCHANGE_PER_OP;
     exports.optionsGET = optionsGET;
 
-    // A memoized function never repeats the same calculations twice
+    /**
+     * A memoized function never repeats the same calculations twice. Takes a function and returns its memoized wrapper.
+     * @param {*} fn
+     * @returns {function(...args)}
+     */
     exports.memoize = function (fn) {
         var cache = [];
         return function(...args) {
@@ -23,9 +32,12 @@ const optionsGET = {
         }
     }
 
-    // Checks if the password conforms to the adopted format,
-    // returns true if it does, false otherwise.
-    // It doesn't support passphrases
+    /**
+     * Checks if the password conforms to the adopted format, returns true if it does, false otherwise.
+     * It doesn't support passphrases.
+     * @param {string} pwd 
+     * @returns {boolean}
+     */
     exports.checkPassword = function (pwd){
         pwd = String(pwd);
 
@@ -33,10 +45,13 @@ const optionsGET = {
         if(pwd.includes("")) return false;
     }
 
-    // Uses the binary search algorithm, then approximates
-    // to the higher value in the array.
-    // Returns the index of next value in the array bigger than the input value,
-    // if all the values are smaller, it returns the index of the biggest of them. 
+    /**
+     * Uses the binary search algorithm, then approximates to the higher value in the array.
+     * Returns the index of next value in the array bigger than the input value, if all the values are smaller, it returns the index of the biggest of them. 
+     * @param {Array} array 
+     * @param {Number} value 
+     * @returns {Number}
+     */
     exports.binarySearchRight = function (array, value){
         let max = array.length -1, min = 0;
         let ptr;
@@ -59,10 +74,10 @@ const optionsGET = {
         return max;
     }
 
-    // Represents the state of the current exchange with the offered
-    // and wanted supercards. Is meant to manage character ids of the superheros
-    // from the Marvel API.
-    // The state is stored in the LocalStorage as exchangeState key
+    /**
+     * Represents the state of the current exchange with the offered and wanted supercards. Is meant to manage character ids of the superheros from the Marvel API.
+     * The state is stored in the LocalStorage as exchangeState key.
+     */
     exports.ExchangeState = class {
         constructor() {
             // If not existant it gets created
@@ -79,8 +94,11 @@ const optionsGET = {
             return [...state.wanted];
         }
 
-        // takes an array and puts it in place of the offered supercards
-        // returns whether it was successful
+        /**
+         * takes an array and puts it in place of the offered supercards returns whether it was successful.
+         * @param {Array} ids
+         * @returns {boolean}
+         */
         set offered(ids){
             if(typeof(ids) === "object"){
                 let state = this.#retrieveState();
@@ -96,8 +114,11 @@ const optionsGET = {
             return true;
         }
 
-        // takes an array and puts it in place of the wanted supercards
-        // returns whether it was successful
+        /**
+         * takes an array and puts it in place of the wanted supercards returns whether it was successful.
+         * @param {Array} ids
+         * @returns {boolean}
+         */
         set wanted(ids){
             if(typeof(ids) === "object"){
                 let state = this.#retrieveState();
@@ -113,18 +134,31 @@ const optionsGET = {
             return true;
         }
 
-        // Takes an id and returns whether the operation was successful
+        /**
+         * Takes an id and returns whether the operation was successful.
+         * @param {string} id
+         * @returns {boolean}
+         */
         addOffered(id){
             return this.add("offered", id);
         }
 
-        // Takes an id and returns whether the operation was successful
+        
+        /**
+         * Takes an id and returns whether the operation was successful.
+         * @param {string} id
+         * @returns {boolean}
+         */
         addWanted(id){
             return this.add("wanted", id);
         }
 
-        // Takes the operation ("wanted"/"offered") and the id of the superhero
-        // to add. Comodity method
+        /**
+         * Takes the operation ("wanted"/"offered") and the id of the superhero to add. Comodity method.
+         * @param {string} op "wanted"/"offered"
+         * @param {string} id
+         * @returns {boolean}
+         */
         add(op, id){
             if(!this.checkOp(op)) throw Error("Invalid operation");
             
@@ -132,25 +166,36 @@ const optionsGET = {
             
             if(typeof(id) !== "number"){
                 throw Error("ExchangeState accepts only numbers");
-                return false;
             }
             
             state[op].add(id);
             return this.#updateState(state);
         }
 
-        // Takes an id and returns whether the operation was successful
+        /**
+         * Takes an id and returns whether the operation was successful.
+         * @param {string} id 
+         * @returns {boolean}
+         */
         removeOffered(id){
             return remove("offered", id);
         }
 
-        // Takes an id and returns whether the operation was successful
+        /**
+         * Takes an id and returns whether the operation was successful.
+         * @param {string} id 
+         * @returns {boolean}
+         */
         removeWanted(id){
             return remove("wanted", id);
         }
 
-        // Takes the operation ("wanted"/"offered") and the id of the superhero
-        // to remove. Comodity method
+        /**
+         * Takes the operation ("wanted"/"offered") and the id of the superhero to remove. Comodity method.
+         * @param {string} op "wanted"/"offered"
+         * @param {string} id 
+         * @returns {boolean}
+         */
         remove(op, id){
             if(!this.checkOp(op)) throw Error("Invalid operation");
 
@@ -158,14 +203,16 @@ const optionsGET = {
 
             if(typeof(id) !== "number"){
                 throw Error("ExchangeState accepts only numbers");
-                return false;
             }
 
             state[op].delete(id);
             return this.#updateState(state);
         }
 
-        // Swaps the cards offered with the wanted ones
+        /**
+         * Swaps the cards offered with the wanted ones, returns true if successful false otherwise.
+         * @returns {boolean}
+         */
         swap(){
             let state = this.#retrieveState();
 
@@ -176,8 +223,10 @@ const optionsGET = {
             return this.#updateState(state);
         }
 
-        // Clears the state, less prone to errors than using the offered and wanted
-        // properties alone
+        /**
+         * Clears the state, less prone to errors than using the offered and wanted properties alone
+         * @returns {boolean}
+         */
         clear(){
             let state = this.#retrieveState();
 
@@ -195,8 +244,11 @@ const optionsGET = {
             return this.size("wanted");
         }
 
-        // Takes the operation ("wanted"/"offered") and returns the size of the
-        // respective set of superhero ids. Comodity method
+        /**
+         * Takes the operation ("wanted"/"offered") and returns the size of the respective set of superhero ids. Comodity method
+         * @param {string} op "wanted"/"offered"
+         * @returns {Number}
+         */
         size(op){
             if(!this.checkOp(op)) throw Error("Invalid operation");
             
@@ -204,16 +256,21 @@ const optionsGET = {
             return state[op].size;
         }
 
-        // An exchange is complete if the user has selected both an offering
-        // and a wanted card
+        /**
+         * An exchange is complete if the user has selected both an offering and a wanted card.
+         * @returns {boolean}
+         */
         isComplete(){
             let state = this.#retrieveState();
 
             return (state.offered.size > 0 && state.wanted.size > 0);
         }
 
-        // Returns a deep copy of the exchangeState in LocalStorage with js Sets to
-        // prevent duplicating supercard
+        /**
+         * Returns a deep copy of the exchangeState in LocalStorage with js.
+         * Sets to prevent duplicating supercard.
+         * @returns {boolean}
+         */
         #retrieveState(){
             let state = localStorage.getItem("exchangeState");
             
@@ -237,8 +294,12 @@ const optionsGET = {
             return state;
         }
 
-        // Tries to update the state and returns if it was successful
-        // Takes the state from the #retrieveState method
+        /**
+         * Tries to update the state and returns if it was successful.
+         * Takes the state from the #retrieveState method.
+         * @param {Object} state
+         * @returns {boolean} 
+         */
         #updateState(state){
             if(state === undefined || state === null){
                 return false;
@@ -259,7 +320,11 @@ const optionsGET = {
             return true;
         }
 
-        // Tells whether the specified operation is supported
+        /**
+         * Tells whether the specified operation is supported.
+         * @param {string} op 
+         * @returns {boolean}
+         */
         checkOp(op){
             if(op === "wanted" || op === "offered")
                 return true;

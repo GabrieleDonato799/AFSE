@@ -1,9 +1,16 @@
+/**
+ * @module front/register
+ */
+
 let form = document.getElementById("registerForm");
 let alert = document.getElementById("registerAlert");
 let submit = document.getElementById("registerSubmit");
 
-// Checks if the details inserted in the register form are correct
-// otherwise it triggers user alerts
+/**
+ * Checks if the details inserted in the register form are correct, if not it triggers bootstrap' alerts.
+ * Returns whether details are correct or not.
+ * @returns {boolean}
+ */
 function checkDetails(){
     let correct = true;
     alert.innerHTML = "";
@@ -31,7 +38,10 @@ function checkDetails(){
     return correct;
 }
 
-// If it doesn't success it will trigger alerts to the user
+/**
+ * Attempts to register the user, if it fails the user is informed by bootstrap' alerts. If the registration succeeds the user is automatically redirected to the index.
+ * Assume it doesn't return a value.
+ */
 function register() {
     const options = {
         method: 'POST',

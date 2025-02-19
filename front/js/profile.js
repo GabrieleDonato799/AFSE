@@ -1,3 +1,7 @@
+/**
+ * @module front/profile
+ */
+
 let user_id = localStorage.getItem("user_id");
 let params = new URLSearchParams(window.location.search);
 let formNick = document.getElementById("formNick");
@@ -8,12 +12,14 @@ let user = null;
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
+/**
+ * Fetches the user's data and shows the current nickname and email on the page.
+ */
 async function getUserData(){
     fetch(`${url_backend}/account/${localStorage.getItem("user_id")}`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
-                    // counter.innerHTML = json.balance;
                     user = json;
                     // notice that the mail is in the new email field
                     formEmail.newemail.value = user.email;
@@ -28,7 +34,7 @@ async function getUserData(){
 }
 
 /**
- * Takes the url and options and returns true if the request succeded, false otherwise. Updates the user data stored in the "user" variable.
+ * Takes the url and options and returns true if the request succeded, false otherwise. On error it shows alerts to the user with the "user/dev friendly" error reported by the server. Updates the user data stored in the "user" variable.
  * @param {*} url 
  * @param {*} options 
  * @returns {boolean}
@@ -114,6 +120,9 @@ function changePwd() {
     commonFetch(`${url_backend}/account/changepwd/${user_id}`, options);
 }
 
+/**
+ * Deletes the user's account, if the operation succeeds the user is redirected up to the index page.
+ */
 async function deleteAccount() {
     const options = {
         method: 'DELETE',

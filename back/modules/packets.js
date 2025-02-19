@@ -1,3 +1,7 @@
+/**
+ * @module back/packets
+ */
+
 const { app, client, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET } = require('./common.js');
 var { marvelCharacters } = require('./rarity.js');
 const crypto = require('crypto');

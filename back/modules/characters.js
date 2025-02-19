@@ -1,3 +1,7 @@
+/**
+ * @module back/characters
+ */
+
 const { app } = require('./common.js');
 const api_marvel = require('../../front/shared/api_marvel.js');
 
