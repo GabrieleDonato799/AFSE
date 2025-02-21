@@ -39,9 +39,19 @@ var getMarvelCharacterById = lib.memoize(function (id) {
 async function getMarvelCharacters(){
     let characters = [];
 
+    // fetch the amount charactes to know how many requests to make
+    let resCount = await api_marvel.getFromMarvel(`public/characters`)
+            .catch(err => {console.error("[Error fetching the character count]", err)});
+    let rawCharsCount = lib.roundUp(resCount.data.total, 2);
+    let charsPerRequest = 100;
+    let rawRequestAmount = rawCharsCount / charsPerRequest;
+
+    console.info(`There are ${lib.roundUp(resCount.data.total, 2)} RAW characters in the API`); 
+
+    // fetch the characters' data
     let reqs = []
-    for(let i=0; i<17; i++){
-        reqs.push(api_marvel.getFromMarvel(`public/characters`,`limit=100&offset=${i*100}`));
+    for(let i=0; i<rawRequestAmount; i++){
+        reqs.push(api_marvel.getFromMarvel(`public/characters`,`limit=${charsPerRequest}&offset=${i*charsPerRequest}`));
     }
     return Promise.all(reqs).then(responses => {
         for(let res of responses){
@@ -66,6 +76,7 @@ async function getMarvelCharacters(){
             characters[i].thumbnail = characters[i].thumbnail.path + "." + characters[i].thumbnail.extension; 
         }
 
+        console.info(`There are ${characters.length} USABLE characters in the API`);
         return characters;
     });
 }
@@ -135,38 +146,57 @@ function determineRarityColors(rarities){
 const cachePath = '/tmp/marvelcharacters.json';
 fs.readFile(cachePath, (err, data) => {
     if(err){
-        getMarvelCharacters().then((res) =>{
-            marvelCharacters.data = res;
-            marvelCharacters.ready = true;
-            console.log(`Downloaded the Marvel' characters`);
-            fs.open(cachePath, 'w', 0o644, (err, fd) => {
-                if(fd < 0){
-                    throw new Error(`Couldn't open the cache file ${cachePath}`);
-                }
-                else{
-                    fs.write(fd, JSON.stringify(marvelCharacters.data), (err, fd) => {
-                        if(err)
-                            throw new Error(`Couldn't write the cache file ${cachePath}`);
-                        else{
-                            console.log(`MarvelCharacters written to cache file ${cachePath}`);
-                        }
-                    });
-                }
-            });
-        });
+        tryFetchMarvelCharacters().catch(_ => { console.log("[Error, no cached data, trying to get it from Marvel' API]", _); exit(-1); });
     }
     else{
+        
         fs.readFile(cachePath, (err, data) => {
-            if(err)
-                throw new Error(`Couldn't read the cache file ${cachePath}`);
-            else{
-                marvelCharacters.data = JSON.parse(data.toString());
-                marvelCharacters.ready = true;
-                console.log(`MarvelCharacters read from cache file ${cachePath}`);
+            try{
+                if(err)
+                    throw new Error(`Couldn't read the cache file ${cachePath}`);
+                else{
+                    marvelCharacters.data = JSON.parse(data.toString());
+                    marvelCharacters.ready = true;
+                    console.log(`MarvelCharacters read from cache file ${cachePath}`);
+                }
+            }
+            catch(e){
+                tryFetchMarvelCharacters().catch(_ => { console.log("[Error, unusable cached data, trying to get it from Marvel' API]", _); exit(-1); });
             }
         });
     }
 });
+
+async function tryFetchMarvelCharacters(){
+    getMarvelCharacters().then((res) =>{
+        marvelCharacters.data = res;
+        marvelCharacters.ready = true;
+        console.log(`Downloaded the Marvel' characters`);
+        fs.open(cachePath, 'w', 0o644, (err, fd) => {
+            if(fd < 0){
+                throw new Error(`Couldn't open the cache file ${cachePath}`);
+            }
+            else{
+                let buffer = undefined;
+                try{
+                    buffer = JSON.stringify(marvelCharacters.data);
+                    fs.write(fd, buffer, (err, fd) => {
+                        if(err)
+                            throw new Error(`Couldn't write the cache file ${cachePath}`);
+                        else{
+                            console.info(`MarvelCharacters written to cache file ${cachePath}`);
+                        }
+                    });
+                }
+                catch(e){
+                    // at this point the data is not cached on disk, or it is but inaccessible and we couldn't fetch the data from the API, hence we can't generate packets.
+                    console.error("[Error, unknown cache state, trying to get it from Marvel' API]", e);
+                    exit(-1);
+                }
+            }
+        });
+    });
+}
 
 module.exports = {
     marvelCharacters,

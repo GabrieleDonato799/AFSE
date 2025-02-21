@@ -1,8 +1,13 @@
+@import url('colorpalette.css');
+
+/* body {
+    padding-top: 3.4em;
+} */
+
 .supercard {
     width: 250px;
     height: 400px;
 }
-
 .supercard-img {
     object-fit: cover;
     min-width: 1px;
@@ -12,19 +17,15 @@
     height: inherit;
     width: inherit;
 }
-
 .supercard-title {
     min-height: 2em;
 }
-
 .divider {
     height: 3em;
 }
-
 .divider-half {
     height: 1.5em;
 }
-
 .disabled-js {
     pointer-events: none;
     font-size: 3em;

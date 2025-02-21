@@ -10,41 +10,41 @@
     <link rel="stylesheet" href="css/main.css" type="text/css"></link>
 </head>
 
-<body class="bg-info">
+<body class="">
     <noscript>
         <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
     </noscript>
     
-    <div class="container">
+    <div class="container ">
         <nav id="navbar"></nav>
         <div class="divider-half"></div>
         
-        <div class="row d-flex justify-content-between">
-            <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>
-            <button class="col btn bg-light" onclick='nextPage();'>Pagina successiva</button>
-            <button id="exchange_button" class="col btn bg-light d-none" onclick='backToExchange();'>Back to exchange</button>
+        <div class="row d-flex justify-content-around">
+            <button class="col-3 btn bg-light" onclick='previousPage();'><b>Previous</b></button>
+            <button name="exchange_button" class="col-3 btn bg-danger text-light d-none" onclick='backToExchange();'><b>Back to exchange</b></button>
+            <button class="col-3 btn bg-light" onclick='nextPage();'><b>Next</b></button>
         </div>
         <div class="divider-half"></div>
-        <div id="container" class="row row-cols-2 g-4 bg-info d-flex justify-content-around">
+        <div id="container" class="row row-cols-2 g-4 d-flex justify-content-around">
             <div id="supercard" onclick="select(this);" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
-                <h6 id="card_title" class="card-title text-light text-center supercard-title"></h6>
+                <h4 id="card_title" class="card-title text-center supercard-title"></h4>
                 <img id="card_image" src="" class="card-img-top card-img supercard-img" alt="...">
                 <!-- <div class="card-body">
                     <p id="card_overview" class="card-text"></p>
                 </div> -->
                 <div class="card-footer">
                     <a href="supercard.html" class="btn btn-primary">Dettagli</a>
+                    <button class="btn d-none"></button>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="divider-half"></div>
-    <div class="container bg-info">
-        <div class="row d-flex justify-content-between">
-            <button class="col btn bg-light" onclick='previousPage();'>Pagina precedente</button>
-            <button class="col btn bg-light" onclick='nextPage();'>Pagina successiva</button>
-            <button id="exchange_button" class="col btn bg-light d-none" onclick='backToExchange();'>Back to exchange</button>
+        <div class="divider-half"></div>
+        <div class="row d-flex justify-content-around">
+            <button class="col-3 btn bg-light" onclick='previousPage();'><b>Previous</b></button>
+            <button name="exchange_button" class="col-3 btn bg-danger text-light d-none" onclick='backToExchange();'><b>Back to exchange</b></button>
+            <button class="col-3 btn bg-light" onclick='nextPage();'><b>Next</b></button>
         </div>
+        <div class="divider-half"></div>
     </div>
     
     <script src="shared/lib.js"></script>

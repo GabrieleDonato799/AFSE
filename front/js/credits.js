@@ -12,22 +12,24 @@ if(user_id === undefined) throw new Error("Unauthorized");
  * @param {Array} offers
  */
 function showOffers(offers){
-    card = document.getElementById('template_card');
+    const card = document.getElementById('template_card');
 
     for(let offer of offers) {
         if(offer.type !== "coins") continue;
 
         console.log(offer);
-        clone = card.cloneNode(true);
+        const clone = card.cloneNode(true);
         clone.id = 'offer-' + offer._id;
-
-
-        title = clone.getElementsByClassName('card-title')[0];
-        amount = clone.getElementsByClassName('card-text')[0];
-        button = clone.getElementsByClassName('btn')[0];
+        
+        const title = clone.getElementsByClassName('card-title')[0];
+        const amount = clone.getElementsByClassName('card-text')[0];
+        // const button = clone.getElementsByClassName('btn')[0];
+        const img = clone.getElementsByClassName('card-img-top')[0];
 
         title.innerHTML = offer.title;
-        amount.innerHTML = "Amount: " + offer.amount;
+        amount.innerHTML = `${offer.amount} coins for ${offer.price} credits`;
+        const imgName = (offer.title).replaceAll(" ", "_");
+        img.src = `img/${imgName}.png`;
 
         clone.classList.remove('d-none')
         card.before(clone)

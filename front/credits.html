@@ -10,22 +10,22 @@
     <link rel="stylesheet" href="css/main.css" type="text/css"></link>
 </head>
 
-<body class="bg-info">
+<body class="">
     <noscript>
         <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
     </noscript>
 
-    <div class="container bg-dark">
+    <div class="container ">
         <nav id="navbar"></nav>
         <div class="divider"></div>
         
-        <h5 class="text-primary">Coins</h5>
+        <h3 class="rounded">Coins</h3>
         <div id="container_coins" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
             <div id="template_card" class="col d-none">
-                <div class="card">
+                <div class="card offer">
                     <div class="card-body">
                         <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
+                        <h6 class="card-text text-light"></h6>
                         <img src="" class="card-img-top" alt="...">
                         <button onclick="buyCoins(this);" class="btn btn-primary">Click to buy</button>
                     </div>
@@ -33,15 +33,15 @@
             </div>
         </div>
         <div class="divider"></div>
-        <h5 class="text-primary">Packets</h5>
-        <div id="container_packets" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
-            <div id="template_card" class="col d-none">
-                <div class="card">
+        <h3 class="rounded">Packets</h3>
+        <div id="container_packets" class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4 justify-content-center">
+            <div id="template_card" class="col">
+                <div class="card offer">
                     <div class="card-body">
-                        <h5 class="card-title"></h5>
-                        <p class="card-text"></p>
-                        <img src="" class="card-img-top" alt="...">
-                        <button class="btn btn-primary">Click for details</button>
+                        <h5 class="card-title">Coming soon...</h5>
+                        <h6 class="card-text text-light">In the meanwhile there's a clickable button down there. Go click it!</h6>
+                        <img src="img/searching_clues.png" class="card-img-top" alt="...">
+                        <button class="btn btn-primary">Clicky, isn't it?</button>
                     </div>
                 </div>
             </div>

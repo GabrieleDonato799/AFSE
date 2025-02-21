@@ -36,10 +36,14 @@ async function getUserAlbum(res, uid){
     });
 
     console.log(albumData);
-
-    albumData.supercards.sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
     
-    res.json(albumData.supercards);
+    if(albumData){
+        albumData.supercards.sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
+        res.json(albumData.supercards);
+    }
+    else{
+        res.status(400).json({ error: "Missing album" });
+    }
 }
 
 // album routes

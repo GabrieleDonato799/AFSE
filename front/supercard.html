@@ -16,59 +16,105 @@
         <div class="container">
             <nav id="navbar"></nav>
             <div class="divider-half"></div>
-            <div id="supercard" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
-                <h6 id="card_title" class="card-title text-light text-center supercard-title"></h6>
-                <img id="card_image" src="" class="card-img-top card-img supercard-img" alt="...">
-                <div class="card-footer">
-                    <a href="supercard.html" class="btn btn-primary">Dettagli</a>
+            <div class="row align-items-center justify-content-center">
+                <!-- Supercard -->
+                <div class="col-auto">
+                    <div id="supercard" class="card supercard d-none">
+                        <h4 id="card_title" class="card-title text-center supercard-title"></h4>
+                        <img id="card_image" src="" class="card-img card-img supercard-img" alt="...">
+                        <div class="card-footer">
+                            <a href="supercard.html" class="btn btn-primary d-none">Dettagli</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="card related-content">
+                        <div class="card-body">
+                            <h5>Description</h5>
+                            <p id="card_description" class="card-text d-none"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div id="card_description" class="col-6"></div>
-            <div id="comics-container" class="d-none">
-                <h1>Comics</h1>
-                <div class="row">
-                    <div id="comics" class="col-md-4 col-sm-6 d-none">
-                        <div class="card h-100">
-                            <div class="card-title"></div>
-                            <img class="card-img-top"
-                                onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
-                            <div class="card-body">
-                                <p class="card-text"></p>
+            <div class="divider-half"></div>
+            <div class="accordion rounded" id="accordionRelatedContent">
+                <!-- Comics -->
+                <div id="comics-container" class="accordion-item d-none">
+                  <h2 class="accordion-header g-4 rounded">
+                    <button class="accordion-button rounded" type="button" data-bs-toggle="collapse" data-bs-target="#relatedContent-comics" aria-expanded="true" aria-controls="relatedContent-comics">
+                        Comics
+                    </button>
+                  </h2>
+                  <div id="relatedContent-comics" class="accordion-collapse collapse show">
+                    <div class="accordion-body">
+                        <div id="comics-container" class="row">
+                            <div id="comics" class="col-md-4 col-sm-6 d-none">
+                                <div class="card related-content">
+                                    <h4 class="card-title text-center"></h4>
+                                    <div class="card-body">
+                                        <img class="card-img"
+                                        onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+                                        <h5>Description</h5>
+                                        <p class="card-text"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+                <!-- Series -->
+                <div id="series-container" class="accordion-item d-none">
+                    <h2 class="accordion-header g-4 rounded">
+                        <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#relatedContent-series" aria-expanded="false" aria-controls="relatedContent-series">
+                            Series
+                        </button>
+                    </h2>
+                    <div id="relatedContent-series" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div id="series-container" class="row">
+                                <div id="series" class="col-md-4 col-sm-6 d-none">
+                                    <div class="card related-content">
+                                        <h4 class="card-title text-center"></h4>
+                                        <div class="card-body">
+                                            <img class="card-img"
+                                            onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+                                            <h5>Description</h5>
+                                            <p class="card-text"></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Events -->
+                <div id="events-container" class="accordion-item d-none">
+                    <h2 class="accordion-header g-4 rounded">
+                        <button class="accordion-button collapsed rounded" type="button" data-bs-toggle="collapse" data-bs-target="#relatedContent-events" aria-expanded="false" aria-controls="relatedContent-events">
+                            Events
+                        </button>
+                    </h2>
+                    <div id="relatedContent-events" class="accordion-collapse collapse">
+                        <div class="accordion-body">
+                            <div id="events-container" class="row">
+                                <div id="events" class="col-md-4 col-sm-6 d-none">
+                                    <div class="card related-content">
+                                        <h4 class="card-title text-center"></h4>
+                                        <div class="card-body">
+                                            <img class="card-img"
+                                            onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
+                                            <h5>Description</h5>
+                                            <p class="card-text"></p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div id="series-container" class="d-none">
-                <h1>Series</h1>
-                <div class="row">
-                    <div id="series" class="col-md-4 col-sm-6 d-none">
-                        <div class="card h-100">
-                            <div class="card-title"></div>
-                            <img class="card-img-top"
-                                onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
-                            <div class="card-body">
-                                <p class="card-text"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div id="events-container" class="d-none">
-                <h1>Events</h1>
-                <div class="row">
-                    <div id="events" class="col-md-4 col-sm-6 d-none">
-                        <div class="card h-100">
-                            <div class="card-title"></div>
-                            <img class="card-img-top"
-                                onerror="this.error=null; this.src='http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg'">
-                            <div class="card-body">
-                                <p class="card-text"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <div class="divider-half"></div>
         </div>
     </body>
 

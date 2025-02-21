@@ -18,10 +18,12 @@ async function getUserAlbum(){
     await fetch(`${url_backend}/album/${user_id}`, optionsGET)
         .then(response => {
             if(response.ok){
-                response.json().then(json => {
-                    userAlbum = json['supercards'];
-                    showSupercards(userAlbum);
-                })
+                response.json()
+                    .then(json => {
+                        userAlbum = json['supercards'];
+                        showSupercards(userAlbum);
+                    })
+                    .catch(_ => console.error(_));
             }
         });
 }
@@ -67,11 +69,13 @@ function exchange(){
     fetch(`${url_backend}/exchange/trade`, options)
         .then(response => {
             if(response.ok){
-                response.json().then(json => {
-                    clearState();
-                    console.log(json);
-                    getTrades();
-                })
+                response.json()
+                    .then(json => {
+                        clearState();
+                        console.log(json);
+                        getTrades();
+                    })
+                    .catch(_ => console.error(_));
             }
         });
 }
@@ -128,28 +132,30 @@ function showSelectedCards(cards, op){
         fetch(`${url_backend}/characters/${cid}`, optionsGET)
             .then(response => {
                 if(response.ok){
-                    response.json().then(json => {
-                        if(Object.keys(json).length === 0) return;
+                    response.json()
+                        .then(json => {
+                            if(Object.keys(json).length === 0) return;
 
-                        let superhero = json;
-                        let clone = card.cloneNode(true);
-                        clone.id = `supercard-${op}-` + cid;
+                            let superhero = json;
+                            let clone = card.cloneNode(true);
+                            clone.id = `supercard-${op}-` + cid;
 
-                        title = clone.getElementsByClassName('card-title')[0];
-                        overview = clone.getElementsByClassName('card-text')[0];
-                        image = clone.getElementsByClassName('card-img-top')[0];
-                        button = clone.getElementsByClassName('btn-primary')[0];
+                            title = clone.getElementsByClassName('card-title')[0];
+                            overview = clone.getElementsByClassName('card-text')[0];
+                            image = clone.getElementsByClassName('card-img-top')[0];
+                            button = clone.getElementsByClassName('btn-primary')[0];
 
-                        title.innerHTML = superhero.name;
-                        image.src = superhero['thumbnail'];
+                            title.innerHTML = superhero.name;
+                            image.src = superhero['thumbnail'];
 
-                        // set the rarity color on the supercard
-                        // clone.style.backgroundColor = `#${superhero.rarity}`;
-                        clone.style.backgroundColor = "#1aa3ff";
-                        
-                        clone.classList.remove('d-none')
-                        container.appendChild(clone);
-                    })
+                            // set the rarity color on the supercard
+                            // clone.style.backgroundColor = `#${superhero.rarity}`;
+                            adjustCardColor(clone, superhero.id);
+                            
+                            clone.classList.remove('d-none')
+                            container.appendChild(clone);
+                        })
+                        .catch(_ => console.error(_));
                 }
             });
     }
@@ -205,9 +211,11 @@ function getTrades(){
     fetch(`${url_backend}/exchange/trades/${user_id}`, optionsGET)
         .then(response => {
             if(response.ok){
-                response.json().then(json => {
-                    showTrades(json);
-                })
+                response.json()
+                    .then(json => {
+                        showTrades(json);
+                    })
+                    .catch(_ => console.error(_));
             }
         });
 }

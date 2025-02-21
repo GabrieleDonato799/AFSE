@@ -23,13 +23,19 @@ async function getCharacterContent(contentType, cid, res){
 // Takes the character id and the server response, directly returns the character data or an error in the response.
 async function returnCharacterById(cid, res){
     let hero = await getCharacterById(cid);
-    try{
-        res.json(hero);
+
+    if(!hero){
+        res.json({error: "Error retrieving the character"});
     }
-    catch(e){
-        console.log(e);
-        res.status(500);
-        res.json({error: "error retrieving the character"});
+    else{
+        try{
+            res.json(hero);
+        }
+        catch(e){
+            console.log(e);
+            res.status(500);
+            res.json({Error: "Error retrieving the character"});
+        }
     }
 }
 
@@ -37,16 +43,24 @@ async function returnCharacterById(cid, res){
 async function getCharacterById(cid) {
     let response = await api_marvel.getFromMarvel(`public/characters/${cid}`,``);
     let hero = undefined;
-    if(response.code === 200){
-        hero = response.data.results[0];
-        try{
-            hero.thumbnail = `${hero.thumbnail.path}.${hero.thumbnail.extension}`;
-        }
-        catch(e){
-            console.log(e);
-        }
-        console.log(`[getCharacterById] hero:`, hero);
+
+    if(response.code === "RequestThrottled"){ // Rate limited
+        console.error(`[getCharacterById] 429 ${response.message}`);
     }
+    else{
+        // if(response.code === 200){ // the server can't determine it because getFromMarvel returns the json of the response
+        if(response.data && response.data.results){
+            hero = response.data.results[0];
+            try{
+                hero.thumbnail = `${hero.thumbnail.path}.${hero.thumbnail.extension}`;
+            }
+            catch(e){
+                console.error(e);
+            }
+            console.log(`[getCharacterById] hero:`, hero);
+        }
+    }
+    
     return hero;
 }
 

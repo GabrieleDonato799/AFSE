@@ -3,6 +3,38 @@
  * @description Common utilities.
  */
 
+// FRONTEND ONLY
+if(globalThis.window !== undefined){
+    // colors used to distinguish the cards selected for an exchange both in the album and exchange pages.
+    const style = window.getComputedStyle(document.body);
+    const SELECTED_OFFERED_COLOR = style.getPropertyValue('--selected-offered-card');
+    const SELECTED_WANTED_COLOR = style.getPropertyValue('--selected-wanted-card');
+    // const UNSELECTED_COLOR = "#d71714"
+
+    /**
+     * Takes the element containing the supercard (supercard-xxxxxx) and the new color.
+     * Returns whether it succeeded or not.
+     * @param {Element}
+     * @param {string}
+     * @returns {boolean}
+     */
+    function setColor(card, color){
+        card.style.backgroundColor = color;
+    }
+
+    // /**
+    //  * Takes the element of a supercard and its superhero's id, determines the color based on if it is selected or not, rarity and so on.
+    //  */
+    function adjustCardColor(card, id){
+        if(exchangeState.contains(id, "wanted"))
+            setColor(card, SELECTED_WANTED_COLOR);
+        else if(exchangeState.contains(id, "offered"))
+            setColor(card, SELECTED_OFFERED_COLOR);
+    }
+}
+
+// FRONTEND & BACKEND
+
 const url_backend = "http://localhost:3005"
 const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
 const optionsGET = {
@@ -43,6 +75,18 @@ const optionsGET = {
 
         if(pwd.length < 8) return false;
         if(pwd.includes("")) return false;
+    }
+
+    /**
+     * Takes a number and a precision, rounds up to 10*precision
+     * @param {number} num The number to round
+     * @param {number} precision
+     * @author Andrew Marshall https://stackoverflow.com/a/5191133/22721622
+     * @author Gabriele Donato
+     */
+    exports.roundUp = function (num, precision) {
+        precision = Math.pow(10, precision)
+        return Math.ceil(num / precision) * precision
     }
 
     /**
@@ -136,7 +180,7 @@ const optionsGET = {
 
         /**
          * Takes an id and returns whether the operation was successful.
-         * @param {string} id
+         * @param {Number} id
          * @returns {boolean}
          */
         addOffered(id){
@@ -146,7 +190,7 @@ const optionsGET = {
         
         /**
          * Takes an id and returns whether the operation was successful.
-         * @param {string} id
+         * @param {Number} id
          * @returns {boolean}
          */
         addWanted(id){
@@ -156,7 +200,7 @@ const optionsGET = {
         /**
          * Takes the operation ("wanted"/"offered") and the id of the superhero to add. Comodity method.
          * @param {string} op "wanted"/"offered"
-         * @param {string} id
+         * @param {Number} id
          * @returns {boolean}
          */
         add(op, id){
@@ -174,7 +218,7 @@ const optionsGET = {
 
         /**
          * Takes an id and returns whether the operation was successful.
-         * @param {string} id 
+         * @param {Number} id 
          * @returns {boolean}
          */
         removeOffered(id){
@@ -183,7 +227,7 @@ const optionsGET = {
 
         /**
          * Takes an id and returns whether the operation was successful.
-         * @param {string} id 
+         * @param {Number} id 
          * @returns {boolean}
          */
         removeWanted(id){
@@ -193,7 +237,7 @@ const optionsGET = {
         /**
          * Takes the operation ("wanted"/"offered") and the id of the superhero to remove. Comodity method.
          * @param {string} op "wanted"/"offered"
-         * @param {string} id 
+         * @param {Number} id 
          * @returns {boolean}
          */
         remove(op, id){
@@ -207,6 +251,26 @@ const optionsGET = {
 
             state[op].delete(id);
             return this.#updateState(state);
+        }
+
+        /**
+         * Takes the superhero id, operation and returns whether the superhero is contained in the state.
+         * Notice that the order of the parameters is swapped as opposed to other methods.
+         * @param {Number} id
+         * @param {string} op
+         * @returns {boolean}
+         */
+        contains(id, op="both"){
+            let state = this.#retrieveState();
+
+            if(typeof(id) !== "number"){
+                throw Error("ExchangeState accepts only numbers");
+            }
+
+            if(op === "both")
+                return (state["wanted"].has(id) || state["offered"].has(id));
+            else if(!this.checkOp(op)) throw Error("Invalid operation");
+                return state[op].has(id);
         }
 
         /**

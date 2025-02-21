@@ -10,30 +10,30 @@
     <link rel="stylesheet" href="css/main.css" type="text/css"></link>
 </head>
 
-<body class="bg-info">
+<body>
     <noscript>
         <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
     </noscript>
 
-    <div class="container bg-dark">
+    <div class="container">
         <nav id="navbar"></nav>
         <div class="divider-half"></div>
         <div id="statusAlert" class="alert alert-danger d-none" role="alert"></div>
         
         <div class="row g-0">
-            <h5 class="text-primary col-12">General</h5>
+            <h3 class="col-12 g-4 rounded">General</h3>
+            <!-- Change nickname -->
             <div class="col-12 col-sm-12 col-lg-6 ">
                 <div class="card h-100">
-                    <div class="card-body">
+                    <div class="card-body content-box rounded">
                         <p class="card-text">
                             <form action="#" method="POST" id="formNick">
                                 <div class="row h-100">
                                     <div class="col-4 m-0">
-                                        <a href="#" class="d-block link-body-emphasis text-decoration-none" data-bs-toggle="dropdown" aria-expanded="false">
-                                            <img src="user.png" alt="mdo" class="border border-primary rounded-circle" style="max-width:100%; max-height:100%;">
-                                        </a>
+                                        <img src="user.png" alt="mdo" class="border rounded bg-white" style="max-width:100%; max-height:100%;">
                                     </div>
                                     <div class="col-8">
+                                        <h5>Change your nickname</h5>
                                         <div class="row mb-3">
                                             <div class="col-auto">
                                                 <label for="inputNick" class="form-label">Known as</label>
@@ -60,10 +60,12 @@
                     </div>
                 </div>
             </div>
+            <!-- Change email -->
             <div class="col-12 col-sm-12 col-lg-6">
                 <div class="card h-100">
-                    <div class="card-body">
+                    <div class="card-body content-box rounded">
                         <p class="card-text">
+                            <h5>Change your email</h5>
                             <form action="#" method="POST" id="formEmail">
                                 <div class="row mb-3">
                                     <div class="col-auto">
@@ -89,10 +91,12 @@
                     </div>
                 </div>
             </div>
+            <!-- Change password -->
             <div class="col-12 col-sm-12 col-lg-6">
                 <div class="card h-100">
-                    <div class="card-body">
+                    <div class="card-body content-box rounded">
                         <p class="card-text">
+                            <h5>Change your password</h5>
                             <form action="#" method="POST" id="formPwd">
                                 <div class="row mb-3">
                                     <div class="col-auto">
@@ -118,31 +122,33 @@
                     </div>
                 </div>
             </div>
+            <!-- Danger Zone -->
             <div class="divider-half col-12"></div>
-            <h5 class="text-primary col-12">Danger zone</h5>
-                <div class="row justify-content-center">
-                    <div class="col-12">
-                        <div class="card h-100 bg-danger text-light">
-                            <div class="card-body">
-                                <p class="card-text">
-                                    <form action="#" method="DELETE" id="formDelete">
-                                        <div class="row mb-3">
-                                            <div class="col-auto">
-                                                <label for="inputPasswordDelete" class="form-label"><em>This action is irreversible!</em> To delete  your account please insert your password as a security measure.</label>
-                                            </div>
-                                            <div class="col-auto">
-                                                <input name="password" type="password" value="..." class="form-control" id="inputPasswordDelete">
-                                            </div>
-                                            <div class="col-auto">
-                                                <button type="submit" class="btn btn-primary" onclick="deleteAccount(); return false;" required>Delete</button>
-                                            </div>
+            <h3 class="col-12 g-4 rounded">Danger zone</h3>
+            <div class="row justify-content-center">
+                <div class="col-sm-12 col-md-8 col-lg-7 col-xl-6 col-xxl-5">
+                    <div class="card h-100 bg-danger text-light">
+                        <div class="card-body">
+                            <p class="card-text">
+                                <h5>Delete your account</h5>
+                                <form action="#" method="DELETE" id="formDelete">
+                                    <div class="row mb-3">
+                                        <div class="col-auto">
+                                            <label for="inputPasswordDelete" class="form-label"><em>This action is irreversible!</em> To delete  your account please insert your password as a security measure.</label>
                                         </div>
-                                    </form>
-                                </p>
-                            </div>
+                                        <div class="col-auto">
+                                            <input name="password" type="password" value="..." class="form-control" id="inputPasswordDelete">
+                                        </div>
+                                        <div class="col-auto">
+                                            <button type="submit" class="btn btn-primary" onclick="deleteAccount(); return false;" required>Delete</button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </p>
                         </div>
                     </div>
                 </div>
+            </div>
             <div class="divider"></div>
         </div>
     </div>
