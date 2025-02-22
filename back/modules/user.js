@@ -8,6 +8,7 @@ const { ObjectId } = require('mongodb');
 
 /**
  * Ottieni un utente specifico per ID dal database
+ * @param {string} id
  */
 async function getUser(id) {
     let user = null;
@@ -470,3 +471,5 @@ app.delete("/account/:uid", (req, res) => {
     const pwd = req.body.password;
     deleteUser(res, uid, email, pwd);
 });
+
+module.exports = { getUser };

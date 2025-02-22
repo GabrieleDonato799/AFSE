@@ -4,8 +4,10 @@
     --selective-yellow: #ffba08;
     --cadet-gray: #a2aebb;
     --steel-blue: #3f88c5;
+    --unselected-card: var(--steel-blue);
     --selected-offered-card: #a31aff;
     --selected-wanted-card: #ffa31a;
+    --selected-sell-card: var(--engineering-orange);
     --white: #fefefe;
 }
 

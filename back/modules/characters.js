@@ -6,7 +6,7 @@ const { app } = require('./common.js');
 const api_marvel = require('../../front/shared/api_marvel.js');
 
 async function getCharacterContent(contentType, cid, res){
-    console.log(`[getCharacterContent] contentType: ${contentType}, cid: ${cid}`);
+    // console.log(`[getCharacterContent] contentType: ${contentType}, cid: ${cid}`);
     // retrieve the data from Marvel
     await api_marvel.getFromMarvel(`public/characters/${cid}/${contentType}`, "")
         .then(response => {
@@ -57,7 +57,7 @@ async function getCharacterById(cid) {
             catch(e){
                 console.error(e);
             }
-            console.log(`[getCharacterById] hero:`, hero);
+            // console.log(`[getCharacterById] hero:`, hero);
         }
     }
     

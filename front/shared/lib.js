@@ -9,7 +9,8 @@ if(globalThis.window !== undefined){
     const style = window.getComputedStyle(document.body);
     const SELECTED_OFFERED_COLOR = style.getPropertyValue('--selected-offered-card');
     const SELECTED_WANTED_COLOR = style.getPropertyValue('--selected-wanted-card');
-    // const UNSELECTED_COLOR = "#d71714"
+    const SELECTED_SELL_COLOR = style.getPropertyValue('--selected-sell-card');
+    const UNSELECTED_COLOR = style.getPropertyValue('--unselected-card');
 
     /**
      * Takes the element containing the supercard (supercard-xxxxxx) and the new color.
@@ -30,6 +31,10 @@ if(globalThis.window !== undefined){
             setColor(card, SELECTED_WANTED_COLOR);
         else if(exchangeState.contains(id, "offered"))
             setColor(card, SELECTED_OFFERED_COLOR);
+        else if(sellState.contains(id))
+            setColor(card, SELECTED_SELL_COLOR);
+        else
+            setColor(card, UNSELECTED_COLOR);
     }
 }
 
@@ -37,6 +42,7 @@ if(globalThis.window !== undefined){
 
 const url_backend = "http://localhost:3005"
 const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
+const MAX_SELECTED_CARDS_TO_SELL = 8;
 const optionsGET = {
     method: 'GET',
     headers: {
@@ -297,11 +303,17 @@ const optionsGET = {
             state.offered = new Set();
             state.wanted = new Set();
 
-            this.#updateState(state);
+            return this.#updateState(state);
         }
 
         sizeOffered() {
             return this.size("offered");
+        }
+
+        isEmpty(){
+            let state = this.#retrieveState();
+
+            return (this.sizeWanted() === 0 && this.sizeOffered() === 0);
         }
 
         sizeWanted() {
@@ -393,6 +405,155 @@ const optionsGET = {
             if(op === "wanted" || op === "offered")
                 return true;
             return false;
+        }
+    }
+
+    /**
+     * Represent the currently selected-for-sale cards 
+     */
+    exports.SellState = class {
+        constructor() {
+            // If not existant it gets created
+            this.#retrieveState();
+        }
+
+        get cards(){
+            let state = this.#retrieveState();
+            return [...state.cards];
+        }
+
+        /**
+         * takes an array and puts it in place of the offered supercards returns whether it was successful.
+         * @param {Array} ids
+         * @returns {boolean}
+         */
+        set cards(ids){
+            if(typeof(ids) === "object"){
+                let state = this.#retrieveState();
+                state.cards = new Set();
+                this.#updateState(state);
+
+                for(let id of ids){
+                    this.add(id);
+                }
+            }else
+                return false;
+            
+            return true;
+        }
+
+        /**
+         * Takes the id of the superhero to add, returns whether it succeeded.
+         * @param {Number} id
+         * @returns {boolean}
+         */
+        add(id){
+            let state = this.#retrieveState();
+            
+            if(typeof(id) !== "number"){
+                throw Error("SellState accepts only numbers");
+            }
+            
+            state.cards.add(id);
+            return this.#updateState(state);
+        }
+
+        /**
+         * Takes the id of the superhero to remove, returns whether it succeded.
+         * @param {Number} id 
+         * @returns {boolean}
+         */
+        remove(id){
+            let state = this.#retrieveState();
+
+            if(typeof(id) !== "number"){
+                throw Error("SellState accepts only numbers");
+            }
+
+            state.cards.delete(id);
+            return this.#updateState(state);
+        }
+
+        /**
+         * Takes the superhero id and returns whether the superhero is contained in the state.
+         * @param {Number} id
+         * @returns {boolean}
+         */
+        contains(id){
+            let state = this.#retrieveState();
+
+            if(typeof(id) !== "number"){
+                throw Error("SellState accepts only numbers");
+            }
+            
+            return state.cards.has(id);
+        }
+
+        /**
+         * Clears the state
+         * @returns {boolean}
+         */
+        clear(){
+            let state = this.#retrieveState();
+
+            state.cards = new Set();
+
+            return this.#updateState(state);
+        }
+
+        isEmpty(){
+            return (this.size() === 0);
+        }
+
+        /**
+         * Returns the amount of superhero ids selected.
+         * @returns {Number}
+         */
+        size(){
+            let state = this.#retrieveState();
+            return state.cards.size;
+        }
+
+        /**
+         * Returns a deep copy of the exchangeState in LocalStorage with js.
+         * Sets to prevent duplicating supercard.
+         * @returns {boolean}
+         */
+        #retrieveState(){
+            let state = localStorage.getItem("sellState");
+            
+            if(state === undefined || state === null){
+                localStorage.setItem("sellState", JSON.stringify({
+                    cards: []
+                }));
+                state = {
+                    cards: new Set()
+                }
+            }else{
+                let _state = JSON.parse(state);
+                state = {
+                    cards: new Set([..._state.cards])
+                }
+            }
+
+            return state;
+        }
+
+        /**
+         * Tries to update the state and returns if it was successful.
+         * @param {Object} state
+         * @returns {boolean} 
+         */
+        #updateState(state){
+            if(state === undefined || state === null){
+                return false;
+            }
+
+            localStorage.setItem("sellState", JSON.stringify({
+                cards: [...state.cards],
+            }));
+
+            return true;
         }
     }
 })(typeof exports === 'undefined'? this['lib']={}: exports);

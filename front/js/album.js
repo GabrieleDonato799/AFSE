@@ -10,6 +10,7 @@ let params = new URLSearchParams(window.location.search);
 let op = params.get("op");
 // let selected = new Set(); // eventually selected supercards for an exchange
 let exchangeState = new lib.ExchangeState();
+let sellState = new lib.SellState();
 
 if(exchangeState.checkOp(op)){
     document.getElementsByName("exchange_button").forEach((elem) => elem.classList.remove("d-none"));
@@ -94,24 +95,47 @@ async function getUserAlbum(){
  */
 function select(callingElem){
     let sid = Number(callingElem.id.split("-")[1]);
-    
-    if(!exchangeState.checkOp(op)) return;
+    selectId(sid);
+    adjustCardColor(callingElem, sid);
+}
 
-    let size = exchangeState.size(op);
-    if(exchangeState.contains(sid)){
-        // remove it
-        exchangeState.remove(op, sid);
+/**
+ * Takes a superhero's numeric id and adds it to the correct state depending on the context.
+ * If the "op" query parameter is set it goes to the exchangeState otherwise to the sellState.
+ * Does not change the color of the supercard.
+ * @param {number} sid
+ */
+function selectId(sid){
+    if(exchangeState.checkOp(op)){
+        let size = exchangeState.size(op);
+        if(exchangeState.contains(sid)){
+            // remove it
+            exchangeState.remove(op, sid);
+        }
+        else{
+            // add it
+            if(size < MAX_SELECTED_CARDS_EXCHANGE_PER_OP){
+                exchangeState.add(op, sid);
+            }else{
+                // Error
+            }
+        }    
     }
     else{
-        // add it
-        if(size < MAX_SELECTED_CARDS_EXCHANGE_PER_OP){
-            exchangeState.add(op, sid);
-        }else{
-            // Error
+        let size = sellState.size(op);
+        if(sellState.contains(sid)){
+            // remove it
+            sellState.remove(sid);
         }
+        else{
+            // add it
+            if(size < MAX_SELECTED_CARDS_TO_SELL){
+                sellState.add(sid);
+            }else{
+                // Error
+            }
+        }  
     }
-
-    adjustCardColor(callingElem, sid);
 }
 
 /**
@@ -120,6 +144,55 @@ function select(callingElem){
 function backToExchange(){
     if(!exchangeState.checkOp(op)) return;
     window.location.href = `exchange.html`;
+}
+
+/**
+ * Sells the selected cards
+ */
+function sell(){
+    if(sellState.isEmpty()) return;
+    // prevent interference with the exchange cards feature
+    if(exchangeState.checkOp(op) || !exchangeState.isEmpty()) return;
+
+    const options = {
+        "method": "PUT",
+        "body": JSON.stringify({
+            cids: sellState.cards
+        }),
+        "headers": {
+            "Content-Type": "application/json",
+        }
+    };
+    let user_id = localStorage.getItem('user_id');
+
+    fetch(`${url_backend}/album/${user_id}/sell`, options)
+        .then(res => {
+            res.json().then(json => {
+                if(res.ok){
+                    console.log(`I've deleted ${sellState.cards}`);
+                    sellState.cards.forEach(cid => {
+                        removeCard(cid);
+                    });
+                    sellState.clear();
+                    updateCoinsCounter(coinsCounter, json.balance);
+
+                    // window.location.href = window.location.href;
+                }
+                else{
+                    console.error(json.error);
+                }
+            });
+        })
+        .catch(_ => console.error(_));
+}
+
+/**
+ * Takes a superhero's id and removes the corresponding card from the page layout.
+ * @param {number/string} sid 
+ */
+function removeCard(sid){
+    let card = document.getElementById(`supercard-${sid}`);
+    card.remove();
 }
 
 getUserAlbum();

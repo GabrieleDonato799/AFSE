@@ -18,13 +18,16 @@
     <div class="container ">
         <nav id="navbar"></nav>
         <div class="divider-half"></div>
-        
+
+        <!-- Upper buttons -->
         <div class="row d-flex justify-content-around">
             <button class="col-3 btn bg-light" onclick='previousPage();'><b>Previous</b></button>
             <button name="exchange_button" class="col-3 btn bg-danger text-light d-none" onclick='backToExchange();'><b>Back to exchange</b></button>
+            <button name="sell_button" class="col-3 btn bg-danger text-light" onclick="sell();"><b>Sell</b></button>
             <button class="col-3 btn bg-light" onclick='nextPage();'><b>Next</b></button>
         </div>
         <div class="divider-half"></div>
+        <!-- Cards container -->
         <div id="container" class="row row-cols-2 g-4 d-flex justify-content-around">
             <div id="supercard" onclick="select(this);" class="card supercard col-6 col-sm-4 col-md-4 col-lg-3 col-xl-3 col-xxl-2 d-none">
                 <h4 id="card_title" class="card-title text-center supercard-title"></h4>
@@ -39,6 +42,7 @@
             </div>
         </div>
         <div class="divider-half"></div>
+        <!-- Lower buttons -->
         <div class="row d-flex justify-content-around">
             <button class="col-3 btn bg-light" onclick='previousPage();'><b>Previous</b></button>
             <button name="exchange_button" class="col-3 btn bg-danger text-light d-none" onclick='backToExchange();'><b>Back to exchange</b></button>
