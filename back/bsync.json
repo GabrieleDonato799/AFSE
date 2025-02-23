@@ -1,0 +1,8 @@
+{
+	"proxy": {
+		"target": "http://localhost:3005",
+		"cookies": {
+			"stripDomain": false
+		}
+	}
+}

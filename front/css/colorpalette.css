@@ -31,6 +31,7 @@ h1, h2, h3{
 }
 .card {
     border-color: var(--prussian-blue);
+    /* border-color: var(--white); */
 }
 .card-title {
     color: var(--bs-light);
@@ -42,7 +43,7 @@ h1, h2, h3{
 div.related-content > div.card-body > p.card-text {
     color: var(--bs-light);
 }
-/* the "related content" description and the supercard description in supercard.html */
+/* the "related content" description and the supercard description in carddetails.html */
 div.card-body > h5 {
     color: var(--bs-light);
 }
@@ -66,9 +67,22 @@ div.card-body > h5 {
     background-color: var(--steel-blue);
     border-color: var(--prussian-blue);
 }
+.progress-bar {
+    color: green;
+    background-color: greenyellow;
+}
+.rarity-button, .rarity-button:hover {
+    color: var(--white) !important;
+    border-color: var(--white) !important;
+    transform: scale(1.0) !important;
+}
 /* interactivity */
 .supercard:hover {
     transform: scale(1.1);
+}
+/* "Details" button under the supercard */
+a.btn {
+    border-color: var(--prussian-blue);
 }
 .btn:not(.d-none) {
     /* background-color: #d7ad14; */
@@ -77,4 +91,27 @@ div.card-body > h5 {
 .btn:not(.d-none):hover {
     /* background-color: #ebd275; */
     transform: scale(1.1);
+}
+.btn, .btn:hover {
+    border-color: var(--prussian-blue);
+}
+/* navbar */
+.navbar {
+    background-color: var(--prussian-blue);
+    color: var(--white);
+}
+.icon {
+    fill: var(--white) !important;
+}
+/* login & registration forms */
+.input-group > label {
+    background-color: var(--steel-blue);
+    color: var(--white);
+    border-color: var(--prussian-blue);
+}
+.input-group > input{
+    border-color: var(--prussian-blue);
+}
+.input-group > select {
+    border-color: var(--prussian-blue);
 }

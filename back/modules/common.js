@@ -12,6 +12,13 @@ const PORT = 3005;
 const DB_NAME = "afse"; // MongoDB Atlas DB name
 const SUPERCARD_PACKET_SIZE = 5;
 const PRICE_FOR_A_PACKET = 1;
+// Options needed to generate a cookie from a signed JWT token for authentication purposes
+const optionsJWS = {
+    maxAge: Number.parseInt(process.env.JWT_EXPIRATION_TIME)*1000,
+    httpOnly: true,
+    sameSite: "Strict",
+    secure: true,
+};
 
 const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
 

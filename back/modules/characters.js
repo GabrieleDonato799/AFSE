@@ -3,7 +3,8 @@
  */
 
 const { app } = require('./common.js');
-const api_marvel = require('../../front/shared/api_marvel.js');
+const api_marvel = require('./api_marvel.js');
+const { getMarvelCharacterById, marvelCharacters } = require('./rarity.js');
 
 async function getCharacterContent(contentType, cid, res){
     // console.log(`[getCharacterContent] contentType: ${contentType}, cid: ${cid}`);
@@ -17,7 +18,8 @@ async function getCharacterContent(contentType, cid, res){
                 res.status(500);
                 res.json({error: "error during data retrieval"});
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 // Takes the character id and the server response, directly returns the character data or an error in the response.
@@ -29,6 +31,8 @@ async function returnCharacterById(cid, res){
     }
     else{
         try{
+            let char = getMarvelCharacterById(cid);
+            hero.rarity = char.rarity;
             res.json(hero);
         }
         catch(e){
@@ -85,6 +89,14 @@ function checkCid(cid, res){
 }
 
 // characters routes
+app.get("/characters/names", (req, res) => {
+    let data = [];
+    marvelCharacters.data.forEach(hero => {
+        data.push(hero.name);
+    });
+    res.json(JSON.stringify(data));
+});
+
 app.get("/characters/:cid", (req, res) => {
     var cid = req.params.cid;
     if((cid = checkCid(cid, res)) === -1) return;

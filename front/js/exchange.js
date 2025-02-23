@@ -6,7 +6,6 @@ var page = 1;
 var pageSize = 100;
 var user_id = localStorage.getItem("user_id");
 var userAlbum = undefined;
-let exchangeState = new lib.ExchangeState();
 var card = document.getElementById('supercard');
 
 if(user_id === undefined) throw new Error("Unauthorized");
@@ -15,7 +14,7 @@ if(user_id === undefined) throw new Error("Unauthorized");
  * Fetches the user's album and shows the cards on the page layout.
  */
 async function getUserAlbum(){
-    await fetch(`${url_backend}/album/${user_id}`, optionsGET)
+    await fetch(`${url_backend}/album`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json()
@@ -25,21 +24,33 @@ async function getUserAlbum(){
                     })
                     .catch(_ => console.error(_));
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 /**
  * Adds an offered card to the left area.
  */
 function addOffered(){
-    window.location.href = "album.html?op=offered";
+    if(!sellState.isEmpty()){
+        setUserFeedbackAlert("Can't both exchange and sell");
+    }
+    else{
+        // console.log(sellState.isEmpty());
+        window.location.href = "album.html?op=offered";
+    }
 }
 
 /**
  * Adds a wanted card to the right area.
  */
 function addWanted(){
-    window.location.href = "album.html?op=wanted";
+    if(!sellState.isEmpty()){
+        setUserFeedbackAlert("Can't both exchange and sell");
+    }
+    else{
+        window.location.href = "album.html?op=wanted";
+    }
 }
 
 /**
@@ -53,6 +64,7 @@ function exchange(){
     }
 
     const options = {
+        "credentials": 'include',
         "method": "POST",
         "body": JSON.stringify({
             offerer: localStorage.getItem("user_id"),
@@ -77,18 +89,26 @@ function exchange(){
                     })
                     .catch(_ => console.error(_));
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 /**
  * Clears all the selected cards.
  */
 function clearState(){
+    // if the user is faster than the page loads, we'll try to delete non-existant elements, so try-catch them.
     for(let id of exchangeState.offered){
-        document.getElementById(`supercard-offered-${id}`).remove();
+        try{
+            document.getElementById(`supercard-offered-${id}`).remove();
+        }
+        catch(e){console.error(e)};
     }
     for(let id of exchangeState.wanted){
-        document.getElementById(`supercard-wanted-${id}`).remove();
+        try{
+            document.getElementById(`supercard-wanted-${id}`).remove();
+        }
+        catch(e){console.error(e)};
     }
 
     exchangeState.clear();
@@ -135,29 +155,13 @@ function showSelectedCards(cards, op){
                     response.json()
                         .then(json => {
                             if(Object.keys(json).length === 0) return;
-
-                            let superhero = json;
-                            let clone = card.cloneNode(true);
-                            clone.id = `supercard-${op}-` + cid;
-
-                            title = clone.getElementsByClassName('card-title')[0];
-                            overview = clone.getElementsByClassName('card-text')[0];
-                            image = clone.getElementsByClassName('card-img-top')[0];
-                            button = clone.getElementsByClassName('btn-primary')[0];
-
-                            title.innerHTML = superhero.name;
-                            image.src = superhero['thumbnail'];
-
-                            // set the rarity color on the supercard
-                            // clone.style.backgroundColor = `#${superhero.rarity}`;
-                            adjustCardColor(clone, superhero.id);
-                            
-                            clone.classList.remove('d-none')
-                            container.appendChild(clone);
+                            s = new Supercard(json, container, card, op);
+                            s.exchangeTweaks();
                         })
                         .catch(_ => console.error(_));
                 }
-            });
+            })
+            .catch(_ => console.log(_));
     }
 }
 
@@ -208,7 +212,7 @@ function hideAddingCards(){
  * Fetches all the users trades and shows them to the page layout.
  */
 function getTrades(){
-    fetch(`${url_backend}/exchange/trades/${user_id}`, optionsGET)
+    fetch(`${url_backend}/exchange/trades`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json()
@@ -217,7 +221,7 @@ function getTrades(){
                     })
                     .catch(_ => console.error(_));
             }
-        });
+        }).catch(_ => console.log(_));
 }
 
 /**

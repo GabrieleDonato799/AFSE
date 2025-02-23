@@ -6,7 +6,7 @@ if(user_id === undefined) throw new Error("Unauthorized");
  * Asks the backend to generate a packet, if that succeeds it reloads the user's balance. 
  */
 function openPacket(){
-    fetch(`${url_backend}/packets/${user_id}`, optionsGET)
+    fetch(`${url_backend}/packets`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
@@ -14,5 +14,5 @@ function openPacket(){
                     console.log(json);
                 })
             }
-        });
+        }).catch(_ => console.log(_));
 }

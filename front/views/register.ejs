@@ -11,40 +11,37 @@
 </head>
 
 <body>
-    <noscript>
-        <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
-    </noscript>
-
     <!-- navbar -->
     <div class="container">
-        <nav id="navbar"></nav>
-        <div class="divider-half"></div>
+        <%- include('navbar.ejs') %>
         <div class="alert alert-warning"><strong>Remember to use a password manager!</strong></div>
-        <div id="registerAlert" class="alert alert-danger d-none" role="alert"></div>          
+        <!-- to maintain the fields size: <div class="col-sm-12 col-lg-11 col-xl-9 col-xxl-8"> -->
         <form id="registerForm" method="POST" onsubmit="register(); return false;">
-            <div class="mb-3">
-                <label for="inputNick" class="form-label">Nickname</label>
+            <div class="mb-3 input-group">
+                <label for="inputNick" class="input-group-text">Nickname</label>
                 <input name="nick" type="text" class="form-control" id="inputNick" autocomplete="nickname" required>
             </div>
-            <div class="mb-3">
-                <label for="inputEmail" class="form-label">E-mail address</label>
+            <div class="mb-3 input-group">
+                <label for="inputEmail" class="input-group-text">E-mail</label>
                 <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" autocomplete="email" required>
-            </div>
-            <div class="mb-3">
-                <label for="inputEmailConfirm" class="form-label">Confirm the e-mail address</label>
+                <label for="inputEmailConfirm" class="input-group-text">Repeat</label>
                 <input name="emailConfirm" type="email" class="form-control" id="inputEmailConfirm" autocomplete="email" aria-describedby="emailHelp" required>
             </div>
-            <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
+            <div class="mb-3 input-group">
+                <label for="inputPassword" class="input-group-text">Password</label>
                 <input name="password" type="password" class="form-control" id="inputPassword" autocomplete="new-password" required>
-            </div>
-            <div class="mb-3">
-                <label for="inputPasswordConfirm" class="form-label">Confirm the password</label>
+                <label for="inputPasswordConfirm" class="input-group-text">Repeat</label>
                 <input name="passwordConfirm" type="password" class="form-control" id="inputPasswordConfirm" autocomplete="new-password" required>
             </div>
+            <div class="mb-3 input-group">
+                <label for="inputFavHero" class="input-group-text">Favorite superhero</label>
+                <select name="favHero" id="inputFavHero" class="form-select" aria-label="Select your favorite superhero">
+                    <option selected>No answer</option>
+                </select>
+            </div>
             <button id="registerSubmit" type="submit" class="btn btn-primary">Submit</button>
-          </form>
-          <div class="divider-half"></div>
+        </form>
+        <div class="divider-half"></div>
     </div>
     
     <script src="shared/lib.js"></script>

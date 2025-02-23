@@ -80,12 +80,6 @@ app.post("/exchange/trade", (req, res) => {
     createTrade(req, res);
 });
 
-app.get("/exchange/trades/:uid", (req, res) => {
-    var uid = req.params.uid;
-    if(uid === undefined){
-        res.status(400);
-        res.json({error: "missing uid"});
-        return;
-    }
-    getTrades(req, res, uid);
+app.get("/exchange/trades", (req, res) => {
+    getTrades(req, res, req.uid);
 });

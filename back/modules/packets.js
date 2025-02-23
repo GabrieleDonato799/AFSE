@@ -15,9 +15,13 @@ async function generatePacket(res, uid){
     try{
         // retrieves the user balance
         // FIND
-        userBalance = await client.db(DB_NAME).collection("users").findOne(
-            {user_id: ObjectId.createFromHexString(uid)},
-        ).balance;
+        user = await client.db(DB_NAME).collection("users").findOne(
+            {_id: ObjectId.createFromHexString(uid)},
+        );
+        if(user == null){
+            res.status(404).json({"error": "user doesn't exist"}); return;
+        }
+        userBalance = user.balance;
 
         // BACKEND CHECK
         if(userBalance < PRICE_FOR_A_PACKET){
@@ -52,22 +56,11 @@ async function generatePacket(res, uid){
 }
 
 // packets routes
-app.get("/packets/:uid", (req, res) =>{
-    const uid = req.params.uid;
-
+app.get("/packets", (req, res) =>{
     if(!marvelCharacters.ready){
         res.json({error: "The server is still loading the required resources"});
     }
-    else{
-        try{
-            ObjectId.createFromHexString(uid);
-        }catch(e){
-            console.log(e);
-            res.status(400);
-            res.json({error: "missing uid"});
-            return;
-        }
-        
-        generatePacket(res, uid);
+    else{		
+        generatePacket(res, req.uid);
     }
 });

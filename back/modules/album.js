@@ -4,33 +4,8 @@
 
 const { app, client, DB_NAME } = require('./common.js');
 const { getUser } = require('./user.js');
-// const { } = require('./rarity.js');
+const { marvelCharacters } = require('./rarity.js');
 const { ObjectId } = require('mongodb');
-
-/**
- * Takes the user id and creates its album.
- * Does not return anything.
- * @param {string} uid
- */
-async function createUserAlbum(uid){
-    const hasAlbum = await client.db(DB_NAME).collection("albums").findOne({
-        user_id: uid 
-    });
-
-    if(hasAlbum) return;
-
-    const albumCreated = await client.db(DB_NAME).collection("albums").insertOne(
-        {
-            user_id: uid,
-            supercards: []
-        }
-    );
-
-    await client.db(DB_NAME).collection("users").updateOne(
-        {_id: uid},
-        {$set: {album_id: albumCreated.insertedId}}
-    );
-}
 
 /**
  * Takes the server's response and the user's id, returns the user's album with the characters ordered by id.
@@ -39,17 +14,19 @@ async function createUserAlbum(uid){
  */
 async function getUserAlbum(res, uid){
     const albumData = await client.db(DB_NAME).collection("albums").findOne({
-        user_id: uid 
+        user_id: ObjectId.createFromHexString(uid)
     });
 
     // console.log(albumData);
     
     if(albumData){
         albumData.supercards.sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
-        res.json(albumData.supercards);
+        albumData.collected = albumData.supercards.length;
+        albumData.total = marvelCharacters.data.length;
+        res.json(albumData);
     }
     else{
-        res.status(400).json({ error: "Missing album" });
+        res.status(500).json({ error: "Missing album" });
     }
 }
 
@@ -79,7 +56,7 @@ async function sellUserCard(res, uid, cids){
 
     // update the balance and remove the card
     for(let i=0; i<cids.length; i++){
-    user.balance += 1;
+        user.balance += 1;
         if(album.supercards.includes(cids[i])){
             let idx = album.supercards.indexOf(cids[i]);
             album.supercards.splice(idx, 1);
@@ -124,35 +101,10 @@ async function sellUserCard(res, uid, cids){
 }
 
 // album routes
-app.get("/album/:uid", (req, res) => {
-    let uid = req.params.uid;
-
-    try{
-        uid = ObjectId.createFromHexString(uid);
-    }catch(e){
-        console.log(e);
-        res.status(400);
-        res.json({error: "missing uid"});
-        return;
-    }
-
-    getUserAlbum(res, uid);
+app.get("/album", (req, res) => {
+    getUserAlbum(res, req.uid);
 });
 
-app.put("/album/:uid/sell", (req, res) => {
-    const uid = req.params.uid;
-    const cids = req.body.cids;
-
-    try{
-        ObjectId.createFromHexString(uid);
-    }catch(e){
-        console.log(e);
-        res.status(400);
-        res.json({error: "missing uid"});
-        return;
-    }
-
-    sellUserCard(res, uid, cids);
+app.put("/album/sell", (req, res) => {
+    sellUserCard(res, req.uid, req.body.cids);
 });
-
-module.exports = { createUserAlbum };

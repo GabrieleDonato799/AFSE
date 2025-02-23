@@ -4,7 +4,6 @@
 
 const params = new URLSearchParams(window.location.search);
 let form = document.getElementById("loginForm");
-let alert = document.getElementById("loginAlert");
 
 if(params.get("logout") !== null){
     logout();
@@ -17,21 +16,18 @@ if(params.get("logout") !== null){
  */
 function checkDetails(){
     let correct = true;
-    alert.innerHTML = "";
+    setUserFeedbackAlert("");
 
     if(form.email.value === ""){
-        alert.innerHTML += "Inserisci l'e-mail!<br>";
+        appendUserFeedbackAlert("Inserisci l'e-mail!");
         correct = false;
     }
     if(form.password.value === ""){
-        alert.innerHTML += "Inserisci la password!<br>";
+        appendUserFeedbackAlert("Inserisci la password!");
         correct = false;
     }
 
-    if(!correct)
-        alert.classList.remove("d-none");
-    else
-        alert.classList.add("d-none");
+    setVisibleUserFeedbackAlert(!correct);
 
     return correct;
 }
@@ -43,6 +39,7 @@ function checkDetails(){
  */
 function login() {
     const options = {
+        credentials: 'include',
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
@@ -59,11 +56,13 @@ function login() {
         .then(response => response.json())
         .then(response => {
             if(response.id === undefined){
-                alert.classList.remove("d-none");
-                alert.innerHTML = `${response.error}`;
+                setVisibleUserFeedbackAlert(true);
+                setUserFeedbackAlert(`${response.error}`);
             }else{
                 localStorage.setItem("user_id", response.id);
-                window.location.href = "index.html";
+                exchangeState.clear();
+                sellState.clear();
+                window.location.href = "album.html";
             }
         })
         .catch(err => console.error(err));
@@ -75,5 +74,17 @@ function login() {
  */
 function logout(){
     localStorage.removeItem("user_id");
-    window.location.href = "index.html";
+    exchangeState.clear();
+    sellState.clear();
+    window.location.href = "login.html";
+
+    let optionsDELETE = optionsGET;
+    optionsDELETE.method = 'DELETE';
+    fetch(`${url_backend}/account/logout`, optionsDELETE)
+        .then(response => {
+            console.log(response);
+            if(!response.ok)
+                setUserFeedbackAlert('Error during logout, try later or manually delete the cookies otherwiser you won\'t be signed out!.');
+        })
+        .catch(_ => console.log(_));
 }

@@ -4,33 +4,21 @@
  */
 
 var navbar = document.getElementById("navbar");
-// It's global to let other js scripts modify the counter.
-// It is first set by the callback of the fetch after this declaration.
-var coinsCounter;
+var userFeedbackAlert = document.getElementById("userFeedbackAlert");
+var coinsCounter = document.getElementById("coins-counter");
 
-fetch("navbar.html")
-    .then(response => {
-        if(response.ok){
-            response.text().then(text => {
-                navbar.innerHTML = text;
-                coinsCounter = document.getElementById("coins-counter");
-                let navLinks = navbar.getElementsByClassName("nav-link");
-                let current = window.location.href;
-                console.log(current);
+let navLinks = navbar.getElementsByClassName("nav-link");
+let current = window.location.href;
+console.log(current);
 
-                for(let link of navLinks){
-                    if(link.href === current){
-                        link.classList.add("active");
-                        link.setAttribute("aria-current", "page");
-                    }
-                }
+for(let link of navLinks){
+    if(link.href === current){
+        link.classList.add("active");
+        link.setAttribute("aria-current", "page");
+    }
+}
 
-                ifLogged();
-            });
-        }else{
-            navbar.innerHTML = "ERROR: Couldn't fetch the navbar";
-        }
-    });
+ifLogged();
 
 /**
  * Logic to apply if the user is logged in.
@@ -47,8 +35,16 @@ async function ifLogged(){
         getUserBalance();
     }
     else{
+        let navItems = navbar.getElementsByClassName("nav-item");
         logTab.classList.remove('d-none');
         regTab.classList.remove('d-none');
+
+        // hide all routes in the navigation bar that can't be accessed without being authenticated
+        for(let link of navItems){
+            if(!['loginTab', 'registerTab'].includes(link.id)){
+                link.classList.add("d-none");
+            }
+        }
     }
 }
 
@@ -61,18 +57,19 @@ async function getUserBalance(){
         updateCoinsCounter(coinsCounter, 0);
     }
 
-    fetch(`${url_backend}/account/balance/${localStorage.getItem("user_id")}`, optionsGET)
+    fetch(`${url_backend}/account/balance`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
                     updateCoinsCounter(coinsCounter, json.balance);
-                });
+                })
+                .catch(_ => console.log(_));
             }
             else{
                 updateCoinsCounter(coinsCounter, 0);
                 console.log("Couldn't fetch the user's balance");
             }
-        });
+        }).catch(_ => console.log(_));
 }
 
 /**
@@ -81,6 +78,43 @@ async function getUserBalance(){
  * @param {number} balance
  */
 function updateCoinsCounter(counterE, balance){
-    counterE.innerHTML = `${balance} coins`;
+    counterE.innerHTML = `<strong>${balance} coins</strong>`;
     counterE.parentElement.classList.remove('d-none');
+}
+
+/**
+ * Takes a message and whether to move the view to the alert. The message will override the one in the navbar' user alert.
+ * @param {string} message
+ * @param {bool} moveView
+ */
+function setUserFeedbackAlert(message, moveView=true){
+    userFeedbackAlert.innerHTML = message;
+    if(moveView){
+        setVisibleUserFeedbackAlert(true);
+        window.location.hash = '#userFeedbackAlert';
+    }
+}
+
+/**
+ * Takes a message to be appended to the one in the navbar' user alert.
+ * The message is place in a newline except if the alert is empty.
+ * @param {string} message
+ * @param {bool} moveView
+ */
+function appendUserFeedbackAlert(message, moveView=true){
+    if(userFeedbackAlert.innerHTML !== "")
+        userFeedbackAlert.innerHTML += '<br>';
+    userFeedbackAlert.innerHTML += message;
+    if(moveView){
+        setVisibleUserFeedbackAlert(true);
+        window.location.hash = '#userFeedbackAlert';
+    }
+}
+
+/**
+ * Takes a boolean.
+ * @param {boolean} bool
+ */
+function setVisibleUserFeedbackAlert(bool){
+    bool ? userFeedbackAlert.classList.remove('d-none') : userFeedbackAlert.classList.add('d-none');
 }

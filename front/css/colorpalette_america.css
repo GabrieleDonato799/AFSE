@@ -1,0 +1,20 @@
+body {
+    /* https://getbootstrap.com/docs/5.3/customize/color/ */
+    background-color: #1a2038;
+}
+.container {
+    background-color: #39507b;
+}
+h3{
+    /* background-color: #9b3430; */
+    background-color: #d71714;
+}
+/* .bg-danger {
+    background-color: #d71714 !important;
+} */
+.content-box {
+    background-color: #fefefe;
+}
+.card {
+    background-color: #d71714;
+}

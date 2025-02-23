@@ -37,7 +37,7 @@ async function buyOffer(req, res, uid){
                 {_id: ObjectId.createFromHexString(uid)},
                 {$inc: {balance: offer.amount}}
             );
-            console.log(`[buyOffer] albumLinked:${albumLinked}`);
+            console.log(`[buyOffer] albumLinked:${albumLinked.modifiedCount}`);
         }else if(offer.type === "packets"){
             // check if user has sufficient balance --> 
 
@@ -56,12 +56,6 @@ app.get("/offers", (req, res) => {
     getOffers(res);
 });
 
-app.post("/offers/buy/:uid", (req, res) => {
-    var uid = req.params.uid;
-    if(uid === undefined){
-        res.status(400);
-        res.json({error: "missing uid"});
-        return;
-    }
-    buyOffer(req, res, uid);
+app.post("/offers/buy", (req, res) => {
+    buyOffer(req, res, req.uid);
 });

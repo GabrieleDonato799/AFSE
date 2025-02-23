@@ -4,6 +4,7 @@
 
 let user_id = localStorage.getItem("user_id");
 let params = new URLSearchParams(window.location.search);
+let selectFavHero = document.getElementById("inputFavHero");
 let formNick = document.getElementById("formNick");
 let formEmail = document.getElementById("formEmail");
 let formPwd = document.getElementById("formPwd");
@@ -16,7 +17,7 @@ if(user_id === undefined) throw new Error("Unauthorized");
  * Fetches the user's data and shows the current nickname and email on the page.
  */
 async function getUserData(){
-    fetch(`${url_backend}/account/${localStorage.getItem("user_id")}`, optionsGET)
+    fetch(`${url_backend}/account`, optionsGET)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
@@ -24,13 +25,15 @@ async function getUserData(){
                     // notice that the mail is in the new email field
                     formEmail.newemail.value = user.email;
                     formNick.newnick.value = user.nick;
+                    selectFavHero.value = user.favhero;
                     console.log(json); 
                 });
             }
             else{
                 console.log("Couldn't fetch the user's data");
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 /**
@@ -47,7 +50,7 @@ async function commonFetch(url, options){
         if(response.ok){
             response.json().then(json => {
                 setAlertMessage(statusAlert, `${json.error}`, "alert-success");
-            });
+            }).catch(_ => console.log(_));
             res = true;
         }
         else{
@@ -68,48 +71,61 @@ async function commonFetch(url, options){
 
 function changeNick() {
     const options = {
+        credentials: 'include',
         method: 'PUT',
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "uid": user_id,
             "newnick": formNick.newnick.value,
-            "email": user.email,
-            "password": formNick.password.value,
         })
     };
 
     statusAlert.classList.add("d-none");
-    commonFetch(`${url_backend}/account/changenick/${user_id}`, options);
+    commonFetch(`${url_backend}/account/changenick`, options);
+}
+
+function changeFavHero() {
+    const options = {
+        credentials: 'include',
+        method: 'PUT',
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            "newfavhero": selectFavHero.value,
+        })
+    };
+
+    statusAlert.classList.add("d-none");
+    commonFetch(`${url_backend}/account/changefavhero`, options);
 }
 
 function changeEmail() {
     const options = {
+        credentials: 'include',
         method: 'PUT',
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "uid": user_id,
             "oldemail": user.email,
             "newemail": formEmail.newemail.value,
-            "password": formEmail.password.value,
         })
     };
 
     statusAlert.classList.add("d-none");
-    commonFetch(`${url_backend}/account/changeemail/${user_id}`, options)
+    commonFetch(`${url_backend}/account/changeemail`, options)
 }
 
-function changePwd() {    
+function changePwd() {
     const options = {
+        credentials: 'include',
         method: 'PUT',
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "uid": user_id,
             "email": user.email,
             "oldpwd": formPwd.oldpassword.value,
             "newpwd": formPwd.newpassword.value
@@ -117,7 +133,7 @@ function changePwd() {
     };
 
     statusAlert.classList.add("d-none");
-    commonFetch(`${url_backend}/account/changepwd/${user_id}`, options);
+    commonFetch(`${url_backend}/account/changepwd`, options);
 }
 
 /**
@@ -125,19 +141,19 @@ function changePwd() {
  */
 async function deleteAccount() {
     const options = {
+        credentials: 'include',
         method: 'DELETE',
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            "uid": user_id,
             "email": user.email,
             "password": formDelete.password.value,
         })
     };
 
     statusAlert.classList.add("d-none");
-    let res = commonFetch(`${url_backend}/account/${user_id}`, options);
+    let res = commonFetch(`${url_backend}/account`, options);
     if(res){
         setTimeout(() => {
             window.location.href = `login.html?logout=y`;
@@ -166,3 +182,4 @@ function setAlertMessage(alertE, message, colorClass, visible=true){
 }
 
 getUserData();
+getSelectableCharactersName();

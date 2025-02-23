@@ -11,34 +11,35 @@
 </head>
 
 <body>
-    <noscript>
-        <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
-    </noscript>
-
     <div class="container">
-        <nav id="navbar"></nav>
+        <%- include('navbar.ejs') %>
         <div class="divider-half"></div>
         
-        <div id="loginAlert" class="alert alert-danger d-none" role="alert"></div>          
+        <!-- to maintain the fields size: <div class="col-sm-12 col-lg-11 col-xl-9 col-xxl-8"> -->
         <form id="loginForm" method="POST" onsubmit="return false;">
             <div class="mb-3">
-                <label for="inputEmail" class="form-label">E-mail address</label>
-                <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" required>
+                <div class="input-group">
+                    <label for="inputEmail" class="input-group-text">E-mail address</label>
+                    <input name="email" type="email" class="form-control" id="inputEmail" aria-describedby="emailHelp" required>
+                </div>
+                
             </div>
             <div class="mb-3">
-                <label for="inputPassword" class="form-label">Password</label>
-                <input name="password" type="password" class="form-control" id="inputPassword" required>
+                <div class="input-group">
+                    <label for="inputPassword" class="input-group-text">Password</label>
+                    <input name="password" type="password" class="form-control" id="inputPassword" required>
+                </div>
             </div>
             <button type="submit" class="btn btn-primary" onclick="login();">Submit</button>
           </form>
           <div class="divider-half"></div>
     </div>
     
-    <script src="js/navbar.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
         crossorigin="anonymous"></script>
     <script src="shared/lib.js"></script>
+    <script src="js/navbar.js"></script>
     <script src="js/login.js"></script>
 </body>
 

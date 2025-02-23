@@ -2,9 +2,9 @@
  * @module back/user
  */
 
-const { app, client, DB_NAME, hashSha256 } = require('./common.js');
-const { createUserAlbum } = require('./album.js');
+const { app, client, DB_NAME, hashSha256, optionsJWS } = require('./common.js');
 const { ObjectId } = require('mongodb');
+const { genJWS } = require('./auth');
 
 /**
  * Ottieni un utente specifico per ID dal database
@@ -85,11 +85,10 @@ async function deleteUser(res, uid, email, pwd){
  * Takes the server response, user's email and password and returns its user_id or null on error or if the user doesn't exist.
  * It's meant to be used in the endpoint response code that needs to verify a password before performing an privileged action. The code can check if the supplied user id matches the one returned by this function. If they are equal then this user is authenticated, must be rejected otherwise.
  * Assumes that every user has a unique email.
- * TODO: Substitute with JWT authentication. 
- * @param {*} res 
+ * @param {Response} res 
  * @param {string} email 
  * @param {string} pwd
- * @returns {boolean} 
+ * @returns {string|null} 
  */
 async function getUserId(email, pwd){
     var uid = null;
@@ -178,13 +177,20 @@ async function addUser(res, user) {
                 error.code = 11000;
                 throw error;
             }
-        });
+        })
+        .catch(_ => console.log(_));
 
         // Inserisce il nuovo utente nel database
         const insertedUser = await client.db(DB_NAME).collection("users").insertOne(user);
+        console.log(createUserAlbum);
         createUserAlbum(insertedUser.insertedId);
+
+        // Return a JWS token
+        const {tok, opts} = genJWS(user._id, admin=false);
+        res.cookie('session_token', tok, opts);
         res.status(201).json({"_id":user._id});
     } catch (e) {
+        console.log(e);
         if (e.code === 11000) {
             res.status(400).json({ error: "E-mail already in use" });
         } else {
@@ -194,8 +200,33 @@ async function addUser(res, user) {
 }
 
 /**
+ * Takes the user id and creates its album.
+ * Does not return anything.
+ * @param {string} uid
+ */
+async function createUserAlbum(uid){
+    const hasAlbum = await client.db(DB_NAME).collection("albums").findOne({
+        user_id: uid 
+    });
+
+    if(hasAlbum) return;
+
+    const albumCreated = await client.db(DB_NAME).collection("albums").insertOne(
+        {
+            user_id: uid,
+            supercards: []
+        }
+    );
+
+    await client.db(DB_NAME).collection("users").updateOne(
+        {_id: uid},
+        {$set: {album_id: albumCreated.insertedId}}
+    );
+}
+
+/**
  * Effettua il login di un utente
- * @param {*} res
+ * @param {Response} res
  * @param {string} email
  * @param {string} password
  */
@@ -214,6 +245,8 @@ async function loginUser(res, email, password) {
         // Cerca un utente con l'email e la password specificate
         var uid = await getUserId(email, password);
         if (uid) {
+            const {tok, opts} = genJWS(uid, admin=false);
+            res.cookie('session_token', tok, opts);
             res.json({ id: uid });
         } else {
             res.status(404).json({ error: "Wrong credentials" });
@@ -226,117 +259,141 @@ async function loginUser(res, email, password) {
 }
 
 /**
- * Updates the user's nickname.
- * Takes the password and the email to verify the user, the new nickname and the user id
- * if the password is correct updates the nickname.
+ * Clears the user agent's cookies. Needed for httpOnly cookies like JWT tokens.
+ * @param {Express.Response} res
+ */
+async function clearCookies(res){
+    res.clearCookie('session_token', optionsJWS);
+}
+
+/**
+ * Updates the user's favorite hero.
  * @param {*} res
  * @param {string} uid 
- * @param {string} newnick
- * @param {string} email
- * @param {string} pwd
+ * @param {string} newfavhero
  */
-async function updateUserNick(res, uid, newnick, email, pwd) {
+async function updateFavHero(res, uid, newfavhero) {
     var user = undefined;
-    // check if the new nickname respects the requirements
-    if(!checkNick(res, newnick)) return;
-    // reusing the logic, prevents I/O to the DB
-    if(!checkPwd(res, pwd)) return;
 
-    const uidMatch = await getUserId(email, pwd);
+    // update the favorite hero
+    try {
+        const result = await client.db(DB_NAME).collection("users").updateOne(
+            {
+                _id: ObjectId.createFromHexString(uid)
+            },
+            {
+                $set: {"favhero": newfavhero}
+            },
+        );
 
-    if(uid !== uidMatch){
-        res.status(401).json({ error: "Failed to authenticate the user action" });
+        if (result.modifiedCount === 0){
+            // The request was unsuccessful
+            res.status(404).json({ error: "Could not update the favorite hero, database error" });
+            return;
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({ error: "Could not update the favorite hero" });
+        return;
     }
-    else{
-        // check if the nickname is already in use
-        try{
-            nickInUse = await client.db(DB_NAME).collection("users").findOne(
-                {nick:newnick},
-            )
-        }
-        catch(e){
-            console.log(e);
-            res.status(404).json({ error: "Database error occured during nickname update" });
-            return;
-        }
-    
-        if(nickInUse){
-            res.status(404).json({ error: "The nickname is already taken" });
-            return;
-        }
-    
-        // update the nickname
-        try {
-            const result = await client.db(DB_NAME).collection("users").updateOne(
-                {
-                    _id: ObjectId.createFromHexString(uid)
-                },
-                {
-                    $set: {"nick": newnick}
-                },
-            );
-    
-            if (result.modifiedCount === 0){
-                // The request was unsuccessful
-                res.status(404).json({ error: "Could not update the nickname, database error" });
-                return;
-            }
-        } catch (e) {
-            console.log(e);
-            res.status(404).json({ error: "Could not update the password" });
-            return;
-        }
-    
-        res.status(200).json({ error: "The nickname was updated correctly" });    
-    }
+
+    res.status(200).json({ error: "The favorite hero was updated correctly" });    
 
     return;
 }
 
 /**
+ * Updates the user's nickname.
+ * Takes the new nickname and the user id.
+ * if the password is correct updates the nickname.
+ * @param {*} res
+ * @param {string} uid 
+ * @param {string} newnick
+ */
+async function updateUserNick(res, uid, newnick) {
+    var user = undefined;
+    // check if the new nickname respects the requirements
+    if(!checkNick(res, newnick)) return;
+    // check if the nickname is already in use
+    try{
+        nickInUse = await client.db(DB_NAME).collection("users").findOne(
+            {nick:newnick},
+        )
+    }
+    catch(e){
+        console.log(e);
+        res.status(404).json({ error: "Database error occured during nickname update" });
+        return;
+    }
+
+    if(nickInUse){
+        res.status(404).json({ error: "The nickname is already taken" });
+        return;
+    }
+
+    // update the nickname
+    try {
+        const result = await client.db(DB_NAME).collection("users").updateOne(
+            {
+                _id: ObjectId.createFromHexString(uid)
+            },
+            {
+                $set: {"nick": newnick}
+            },
+        );
+
+        if (result.modifiedCount === 0){
+            // The request was unsuccessful
+            res.status(404).json({ error: "Could not update the nickname, database error" });
+            return;
+        }
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({ error: "Could not update the nickname" });
+        return;
+    }
+
+    res.status(200).json({ error: "The nickname was updated correctly" });
+    
+    return;
+}
+
+/**
  * Updates the user's email.
- * Takes the user id, old and new emails and the password to verify the user.
+ * Takes the user id, old and new emails of the user.
  * @param {*} res 
  * @param {string} uid 
  * @param {string} oldemail 
  * @param {string} newemail 
- * @param {string} pwd 
  */
-async function updateUserEmail(res, uid, oldemail, newemail, pwd){
-    var user = undefined;
-    // reusing the logic, prevents I/O to the DB
-    if(!checkPwd(res, pwd)) return;
-
-    const uidMatch = await getUserId(oldemail, pwd);
-
-    if(uid !== uidMatch){
-        // the user is logged in, the old email is automatically retrieved by the browser so this must be a wrong password.
-        res.status(401).json({ error: "Wrong password" });
+async function updateUserEmail(res, uid, oldemail, newemail){
+    if(oldemail == newemail){
+        res.status(400).json({ error: "The new email provided is exactly the previous one. Nothing done." })
+        return;
     }
-    else{
-        try {
-            const result = await client.db(DB_NAME).collection("users").updateOne(
-                {
-                    _id: ObjectId.createFromHexString(uid)
-                },
-                {
-                    $set: {"email": newemail}
-                },
-            );
 
-            if (result.modifiedCount === 0){
-                // The request was unsuccessful
-                res.status(404).json({ error: "Could not update the email, database error" });
-                return;
-            }
-        } catch (e) {
-            console.log(e);
-            res.status(404).json({ error: "Could not update the email" });
+    try {
+        const result = await client.db(DB_NAME).collection("users").updateOne(
+            {
+                _id: ObjectId.createFromHexString(uid)
+            },
+            {
+                $set: {"email": newemail}
+            },
+        );
+
+        if (result.modifiedCount === 0){
+            // The request was unsuccessful
+            res.status(404).json({ error: "Could not update the email, database error" });
             return;
         }
-
-        res.status(200).json({ error: "The email was updated correctly" });
+    } catch (e) {
+        console.log(e);
+        res.status(404).json({ error: "Could not update the email" });
+        return;
     }
+
+    res.status(200).json({ error: "The email was updated correctly" });
 
     return;
 }
@@ -421,55 +478,58 @@ app.post('/account/login', (req, res) => {
     loginUser(res, email, password);
 });
 
+app.delete('/account/logout', (req, res) => {
+    clearCookies(res);
+    res.end();
+});
+
 app.post("/account/register", (req, res) => {
     addUser(res, req.body);
 });
 
-app.put("/account/changepwd/:uid", (req, res) => {
+app.put("/account/changepwd", (req, res) => {
     if(req.body === undefined)
         res.status(404).json({ error: "Missing request' body"})
-    const uid = req.body.uid;
     const email = req.body.email;
     const oldpwd = req.body.oldpwd;
     const newpwd = req.body.newpwd;
-    updateUserPwd(res, uid, email, oldpwd, newpwd);
+    updateUserPwd(res, req.uid, email, oldpwd, newpwd);
 });
 
-app.put("/account/changeemail/:uid", (req, res) => {
+app.put("/account/changeemail", (req, res) => {
     if(req.body === undefined)
         res.status(404).json({ error: "Missing request' body"})
-    const uid = req.body.uid;
     const oldemail = req.body.oldemail;
     const newemail = req.body.newemail;
-    const pwd = req.body.password;
-    updateUserEmail(res, uid, oldemail, newemail, pwd);
+    updateUserEmail(res, req.uid, oldemail, newemail);
 });
 
-app.put("/account/changenick/:uid", (req, res) => {
+app.put("/account/changenick", (req, res) => {
     if(req.body === undefined)
         res.status(404).json({ error: "Missing request' body"})
-    const uid = req.body.uid;
     const newnick = req.body.newnick;
+    updateUserNick(res, req.uid, newnick);
+});
+
+app.put("/account/changefavhero", (req, res) => {
+    if(req.body === undefined)
+        res.status(404).json({ error: "Missing request' body"})
+    const newfavhero = req.body.newfavhero;
+    updateFavHero(res, req.uid, newfavhero);
+});
+
+app.get("/account/balance", (req, res) => {
+    getUserBalance(res, req.uid);
+});
+
+app.get("/account", (req, res) => {
+    getWholeUser(res, req.uid);
+});
+
+app.delete("/account", (req, res) => {
     const email = req.body.email;
     const pwd = req.body.password;
-    updateUserNick(res, uid, newnick, email, pwd);
-});
-
-app.get("/account/balance/:uid", (req, res) => {
-    const uid = req.params.uid;
-    getUserBalance(res, uid);
-});
-
-app.get("/account/:uid", (req, res) => {
-    const uid = req.params.uid;
-    getWholeUser(res, uid);
-});
-
-app.delete("/account/:uid", (req, res) => {
-    const uid = req.params.uid;
-    const email = req.body.email;
-    const pwd = req.body.password;
-    deleteUser(res, uid, email, pwd);
+    deleteUser(res, req.uid, email, pwd);
 });
 
 module.exports = { getUser };

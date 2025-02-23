@@ -3,7 +3,6 @@
  */
 
 let params = new URLSearchParams(window.location.search);
-let exchangeState = new lib.ExchangeState(); // to use adjustCardColor()
 let missingDescription = "Unfortunately, only Marvel knows about this one...";
 
 /**
@@ -70,8 +69,7 @@ function getContent(cid){
                     console.log(`Invalid character ${error.error}`);
                 })
             }
-        }).catch(err => {
-        });
+        }).catch(_ => console.log(_));
 }
 
 /**
@@ -87,22 +85,23 @@ function showSupercard(superhero){
     let image = card.getElementsByClassName('card-img')[0];
     let button = card.getElementsByClassName('btn-primary')[0];
     let footer = card.getElementsByClassName('card-footer')[0];
-    let card_description = document.getElementById("card_description");
+    let card_description_container = document.getElementById("card_description");
+    let card_description_text = card_description_container.getElementsByClassName('card-text')[0];
     
     title.innerHTML = superhero.name;
     image.src = superhero['thumbnail'];
     footer.firstElementChild.search = `?cid=${superhero.id}`;
     if(superhero.description)
-        card_description.innerText = `${superhero.description}`;
+        card_description_text.innerText = `${superhero.description}`;
     else
-        card_description.innerText = missingDescription;
+        card_description_text.innerText = missingDescription;
 
     // set the rarity color on the supercard
     // card.style.backgroundColor = `#${superhero.rarity}`;
     adjustCardColor(card, superhero.id);
 
     card.classList.remove('d-none')
-    card_description.classList.remove('d-none');
+    card_description_container.classList.remove('d-none');
 }
 
 getContent(params.get("cid"));

@@ -4,7 +4,7 @@
 
 const { app } = require('./common.js');
 const lib = require('../../front/shared/lib.js')
-const api_marvel = require('../../front/shared/api_marvel.js');
+const api_marvel = require('./api_marvel.js');
 const fs = require('fs');
 const { error } = require('console');
 const { exit } = require('process');
@@ -24,7 +24,7 @@ var marvelCharacters = {
  * A memoized function to retrieve the marvel characters redefined by getMarvelCharacters() every time it recalculates the character list.
  */
 var getMarvelCharacterById = lib.memoize(function (id) {
-    for(let c of marvelCharacters){
+    for(let c of marvelCharacters.data){
         if(c.id === id){
            return c;
         }
@@ -56,12 +56,15 @@ async function getMarvelCharacters(){
     return Promise.all(reqs).then(responses => {
         for(let res of responses){
             for(let hero of res['data']['results']){
-                if(!hero['thumbnail']['path'].includes("image_not_available")){
+                if(
+                    !hero['thumbnail']['path'].includes("image_not_available") &&
+                    hero['thumbnail']['path'] !== "http://i.annihil.us/u/prod/marvel/i/mg/f/60/4c002e0305708"
+                ){
                     let rarity = hero['comics']['available']
                     rarity += hero['series']['available']
                     rarity += hero['events']['available']
                     hero.rarity = rarity;
-                     characters.push(hero);
+                    characters.push(hero);
                 }
             }
         }
@@ -78,7 +81,8 @@ async function getMarvelCharacters(){
 
         console.info(`There are ${characters.length} USABLE characters in the API`);
         return characters;
-    });
+    })
+    .catch(_ => console.log(_));
 }
 
 /**
@@ -195,12 +199,14 @@ async function tryFetchMarvelCharacters(){
                 }
             }
         });
-    });
+    })
+    .catch(_ => console.log(_));
 }
 
 module.exports = {
     marvelCharacters,
     getMarvelCharacters,
+    getMarvelCharacterById,
     calculateRarity,
     determineRarityColors,
 };

@@ -3,8 +3,10 @@
  */
 
 let form = document.getElementById("registerForm");
-let alert = document.getElementById("registerAlert");
+let alert = document.getElementById("userFeedbackAlert");
 let submit = document.getElementById("registerSubmit");
+
+getSelectableCharactersName();
 
 /**
  * Checks if the details inserted in the register form are correct, if not it triggers bootstrap' alerts.
@@ -44,6 +46,7 @@ function checkDetails(){
  */
 function register() {
     const options = {
+        credentials: 'include',
         method: 'POST',
         headers: {
             "Content-Type": "application/json"
@@ -51,7 +54,8 @@ function register() {
         body: JSON.stringify({
             "nick": form.nick.value,
             "email": form.email.value,
-            "password": form.password.value
+            "password": form.password.value,
+            "favhero": form.favHero.value
         })
     };
 
@@ -62,6 +66,8 @@ function register() {
             if(response.ok){
                 response.json().then(json => {
                     localStorage.setItem("user_id", json._id);
+                    exchangeState.clear();
+                    sellState.clear();
 
                     alert.innerHTML = "Successfully registered!";
                     alert.classList.add("alert-success");
@@ -69,7 +75,7 @@ function register() {
                     alert.classList.remove("d-none");
                     
                     setTimeout(() => {
-                        window.location.href = "index.html";
+                        window.location.href = "album.html";
                     }, 1250);
                 })
             }else{

@@ -47,7 +47,8 @@ async function getOffers(){
                     showOffers(json.offers);
                 })
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 /**
@@ -66,6 +67,7 @@ function buyCoins(callingElem){
     let id = callingElem.parentNode.parentNode.parentNode.id.split("-")[1];
 
     const options = {
+        "credentials": 'include',
         "method": "POST",
         "body": JSON.stringify(
             {id: id}  
@@ -75,7 +77,7 @@ function buyCoins(callingElem){
         }
     };
 
-    fetch(`${url_backend}/offers/buy/${localStorage.getItem("user_id")}`, options)
+    fetch(`${url_backend}/offers/buy`, options)
         .then(response => {
             if(response.ok){
                 response.json().then(json => {;
@@ -83,7 +85,8 @@ function buyCoins(callingElem){
                     getUserBalance();
                 })
             }
-        });
+        })
+        .catch(_ => console.log(_));
 }
 
 getOffers();

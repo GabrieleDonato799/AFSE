@@ -8,25 +8,25 @@ let user_id = localStorage.getItem("user_id");
 let userAlbum = undefined;
 let params = new URLSearchParams(window.location.search);
 let op = params.get("op");
-// let selected = new Set(); // eventually selected supercards for an exchange
-let exchangeState = new lib.ExchangeState();
-let sellState = new lib.SellState();
 
 if(exchangeState.checkOp(op)){
     document.getElementsByName("exchange_button").forEach((elem) => elem.classList.remove("d-none"));
+}
+else{
+    document.getElementsByName("sell_button").forEach((elem) => elem.classList.remove("d-none"));
 }
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
 function nextPage(){
     page += 1;
-    showSupercards(userAlbum);
+    showSupercards(userAlbum.supercards);
 }
 
 function previousPage(){
     if(page > 0)
         page -= 1;
-    showSupercards(userAlbum);
+    showSupercards(userAlbum.supercards);
 }
 
 /**
@@ -45,49 +45,49 @@ function showSupercards(album){
         fetch(`${url_backend}/characters/${album[i]}`, optionsGET)
             .then(res => res.json()
                 .then(json => {
-                    json.error ? console.error(`Server error: ${json.error}`) : showSupercardsClbk(json, container, card);
+                    if(json.error) console.error(`Server error: ${json.error}`);
+                    else{
+                        s = new Supercard(json, container, card);
+                        s.albumTweaks();
+                    }
                 })
             )
-            .catch(err => console.error());
+            .catch(_ => console.error(_));
     }
 }
 
-function showSupercardsClbk(superhero, container, card){
-    // console.log(superhero);
-    clone = card.cloneNode(true);
-    clone.id = 'supercard-' + superhero.id;
-
-    title = clone.getElementsByClassName('card-title')[0];
-    overview = clone.getElementsByClassName('card-text')[0];
-    image = clone.getElementsByClassName('card-img-top')[0];
-    button = clone.getElementsByClassName('btn-primary')[0];
-    footer = clone.getElementsByClassName('card-footer')[0];
-
-    title.innerHTML = superhero.name;
-    image.src = superhero['thumbnail'];
-    footer.firstElementChild.search = `?cid=${superhero.id}`;
-
-    // set the rarity color on the supercard
-    // clone.style.backgroundColor = `#${superhero.rarity}`;
-    adjustCardColor(clone, superhero.id);
-
-    clone.classList.remove('d-none');
-    card.before(clone);
-}
-
 /**
- * Retrieves the user's album from the backend
+ * Retrieves the user's album from the backend, takes a function to call to which it will pass the album.
+ * @param {function (album)} action
  */
-async function getUserAlbum(){
-    await fetch(`${url_backend}/album/${user_id}`, optionsGET)
+async function getUserAlbum(action){
+    await fetch(`${url_backend}/album`, optionsGET)
         .then(album => {
             if(album.ok){
                 album.json().then(json => {
                     userAlbum = json;
-                    showSupercards(userAlbum);
+                    if(action)
+                        action(userAlbum);
                 })
             }
-        });
+        })
+        .catch(_ => console.log(_));
+}
+
+/**
+ * Takes the user's album returned from the "/album/:uid" endpoint and updates the progress bar.
+ * @param {Object} album
+ */
+function updateProgress(album){
+    const albumProgress = document.getElementById('albumProgress');
+    let progressBar = albumProgress.children[0];
+
+    albumProgress.attributes['aria-valuenow'].value = album.collected;
+    albumProgress.attributes['aria-valuemax'].value = album.total;
+    progressBar.style.width = `${(album.collected/album.total)*100}%`
+    progressBar.innerText = `${album.collected}/${album.total}`;
+
+    albumProgress.classList.remove('d-none');  
 }
 
 /**
@@ -106,6 +106,16 @@ function select(callingElem){
  * @param {number} sid
  */
 function selectId(sid){
+    // prevent interference between selling and exchanging cards features
+    if(
+        (!sellState.isEmpty() && exchangeState.checkOp(op)) ||
+        (!exchangeState.isEmpty() && !exchangeState.checkOp(op))
+    ) {
+        setUserFeedbackAlert("Can't both exchange and sell");
+        setVisibleUserFeedbackAlert(true);
+        return;
+    };
+
     if(exchangeState.checkOp(op)){
         let size = exchangeState.size(op);
         if(exchangeState.contains(sid)){
@@ -155,6 +165,7 @@ function sell(){
     if(exchangeState.checkOp(op) || !exchangeState.isEmpty()) return;
 
     const options = {
+        "credentials": 'include',
         "method": "PUT",
         "body": JSON.stringify({
             cids: sellState.cards
@@ -163,9 +174,8 @@ function sell(){
             "Content-Type": "application/json",
         }
     };
-    let user_id = localStorage.getItem('user_id');
 
-    fetch(`${url_backend}/album/${user_id}/sell`, options)
+    fetch(`${url_backend}/album/sell`, options)
         .then(res => {
             res.json().then(json => {
                 if(res.ok){
@@ -175,15 +185,22 @@ function sell(){
                     });
                     sellState.clear();
                     updateCoinsCounter(coinsCounter, json.balance);
+                    getUserAlbum((album) => {
+                        updateProgress(album);
+                    });
 
                     // window.location.href = window.location.href;
                 }
                 else{
                     console.error(json.error);
+                    sellState.clear();
                 }
             });
         })
-        .catch(_ => console.error(_));
+        .catch(_ => {
+            console.error(_);
+            sellState.clear();
+        });
 }
 
 /**
@@ -192,7 +209,11 @@ function sell(){
  */
 function removeCard(sid){
     let card = document.getElementById(`supercard-${sid}`);
-    card.remove();
+    if(card)
+        card.remove();
 }
 
-getUserAlbum();
+getUserAlbum(function processUserAlbum(album){    
+    showSupercards(album.supercards);
+    updateProgress(album);
+});
