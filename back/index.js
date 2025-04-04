@@ -34,6 +34,7 @@ app.use('/index.html', (req, res) => {
 app.use(express.static(__dirname + '/../front')); // Tell express from where it should deliver the static content
 app.use('/favicon.ico', express.static(__dirname + '/../front/favicon.ico'));
 
+require('./modules/schema.js');
 require('./modules/api_marvel.js');
 require('./modules/album.js');
 require('./modules/characters.js');
