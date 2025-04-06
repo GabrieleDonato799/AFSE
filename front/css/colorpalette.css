@@ -40,6 +40,18 @@ h1, h2, h3{
 .supercard, .offer, .related-content {
     background-color: var(--steel-blue);
 }
+.wanted-card {
+    background-color: var(--selected-wanted-card);
+}
+.offered-card {
+    background-color: var(--selected-offered-card);
+}
+.sell-card {
+    background-color: var(--selected-sell-card);
+}
+.missing-card {
+    background-color: var(--cadet-gray);
+}
 div.related-content > div.card-body > p.card-text {
     color: var(--bs-light);
 }

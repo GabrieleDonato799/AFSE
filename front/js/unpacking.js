@@ -10,7 +10,8 @@ function openPacket(){
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
-                    getUserBalance();
+                    if(!json.error)
+                        getUserBalance();
                     console.log(json);
                 })
             }

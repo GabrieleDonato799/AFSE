@@ -3,6 +3,10 @@
  */
 const MAX_SELECTED = 4;
 const PAGE_SIZE = 20;
+/**
+ * Contains the id and respective Supercard objects of the currently displayed supercards, this makes calling their tweaking methods easier when selling instead of removing all cards and re-fetching them.
+ */
+const displayedSupercards = {};
 let page = 0;
 let user_id = localStorage.getItem("user_id");
 let userAlbum = undefined;
@@ -20,17 +24,17 @@ if(user_id === undefined) throw new Error("Unauthorized");
 
 function nextPage(){
     page += 1;
-    showSupercards(userAlbum.supercards);
+    showSupercards(userAlbum.fullAlbum);
 }
 
 function previousPage(){
     if(page > 0)
         page -= 1;
-    showSupercards(userAlbum.supercards);
+    showSupercards(userAlbum.fullAlbum);
 }
 
 /**
- * Takes an album and adds supercards to the DOM.
+ * Takes a full album and adds supercards to the DOM. Cards that are not yet collected are shown gray.
  * @param {Response} response 
  */
 function showSupercards(album){
@@ -40,15 +44,22 @@ function showSupercards(album){
     container.append(card);
     const pgsize = Math.min(album.length, (page+1)*PAGE_SIZE);
 
+    // delete all currently displayed Supercard objects
+    Object.keys(displayedSupercards).forEach(k => delete displayedSupercards[k]);
+
     for (i = page*PAGE_SIZE; i < pgsize; i++) {
+        const thatI = i; // i changes during the call to fetch and its resolution, this way we know that in its context we have a fixed value.
         // query the superhero
         fetch(`${url_backend}/characters/${album[i]}`, optionsGET)
             .then(res => res.json()
                 .then(json => {
                     if(json.error) console.error(`Server error: ${json.error}`);
                     else{
-                        s = new Supercard(json, container, card);
-                        s.albumTweaks();
+                        displayedSupercards[`${album[thatI]}`] = new Supercard(json, container, card);
+                        if(userAlbum.supercards.includes(album[thatI]))
+                            displayedSupercards[`${album[thatI]}`].albumTweaks();
+                        else
+                            displayedSupercards[`${album[thatI]}`].albumMissingTweaks();
                     }
                 })
             )
@@ -66,6 +77,8 @@ async function getUserAlbum(action){
             if(album.ok){
                 album.json().then(json => {
                     userAlbum = json;
+                    // precalculate the sorted set of all cards, missing and collected
+                    userAlbum.fullAlbum = userAlbum.supercards.concat(userAlbum.missing).sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
                     if(action)
                         action(userAlbum);
                 })
@@ -94,7 +107,14 @@ function updateProgress(album){
  * Callback to select a card to be exchanged.
  */
 function select(callingElem){
-    let sid = Number(callingElem.id.split("-")[1]);
+    let sid;
+
+    if(callingElem.classList.contains('missing-card')){
+        setUserFeedbackAlert("You don't have that card!");
+        return;
+    }
+
+    sid = Number(callingElem.id.split("-")[1]);
     selectId(sid);
     adjustCardColor(callingElem, sid);
 }
@@ -181,7 +201,7 @@ function sell(){
                 if(res.ok){
                     console.log(`I've deleted ${sellState.cards}`);
                     sellState.cards.forEach(cid => {
-                        removeCard(cid);
+                        displayedSupercards[`${cid}`].albumMissingTweaks();
                     });
                     sellState.clear();
                     updateCoinsCounter(coinsCounter, json.balance);
@@ -207,13 +227,13 @@ function sell(){
  * Takes a superhero's id and removes the corresponding card from the page layout.
  * @param {number/string} sid 
  */
-function removeCard(sid){
-    let card = document.getElementById(`supercard-${sid}`);
-    if(card)
-        card.remove();
-}
+// function removeCard(sid){
+// 	let card = document.getElementById(`supercard-${sid}`);
+// 	if(card)
+// 		card.remove();
+// }
 
 getUserAlbum(function processUserAlbum(album){    
-    showSupercards(album.supercards);
+    showSupercards(album.fullAlbum);
     updateProgress(album);
 });

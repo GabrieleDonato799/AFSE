@@ -15,25 +15,34 @@ async function generatePacket(res, uid){
     try{
         // retrieves the user balance
         // FIND
-        user = await client.db(DB_NAME).collection("users").findOne(
+        const user = await client.db(DB_NAME).collection("users").findOne(
             {_id: ObjectId.createFromHexString(uid)},
         );
         if(user == null){
             res.status(404).json({"error": "user doesn't exist"}); return;
         }
-        userBalance = user.balance;
 
         // BACKEND CHECK
-        if(userBalance < PRICE_FOR_A_PACKET){
+        if(user.balance < PRICE_FOR_A_PACKET){
             res.json({error: "insufficient balance"});
             res.status(402);
             return;
         }
 
+        // retrieves the user album to generate only cards that are missing
+        const album = await client.db(DB_NAME).collection("albums").findOne(
+            {user_id: ObjectId.createFromHexString(uid)},
+        );
+
         // GENERATION
-        for(let i=0; i<SUPERCARD_PACKET_SIZE; i++){
-            let id = crypto.randomInt(0, marvelCharacters.data.length);
-            packet.push(marvelCharacters.data[id].id);
+        // take all ids, remove owned cards ids, pick a random id from the result
+        const allIds = new Set(marvelCharacters.data.map(hero => hero.id));
+        const ownedIds = new Set(album.supercards);
+        const diff = allIds.difference(ownedIds);
+
+        for(let i=0; i<Math.min(SUPERCARD_PACKET_SIZE, diff.size); i++){
+            let id = crypto.randomInt(0, diff.size);
+            packet.push([...diff][id]);
         }
         
         // UPDATE DOCUMENT IN A DIFFERENT COLLECTION

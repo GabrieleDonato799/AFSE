@@ -20,8 +20,12 @@ async function getUserAlbum(res, uid){
     // console.log(albumData);
     
     if(albumData){
-        albumData.supercards.sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
         albumData.collected = albumData.supercards.length;
+        albumData.missing = [];
+        marvelCharacters.data.forEach(superhero => {
+            albumData.missing.push(superhero.id);
+        });
+        albumData.missing = [...((new Set(albumData.missing)).difference(new Set(albumData.supercards)))];
         albumData.total = marvelCharacters.data.length;
         res.json(albumData);
     }

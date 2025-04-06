@@ -547,9 +547,8 @@ class Supercard {
         this.superhero = superhero;
         this.container = container;
         this.operation = operation;
-        this.supercard = supercard;
 
-        this.clone = this.supercard.cloneNode(true);
+        this.clone = supercard.cloneNode(true);
         if(operation)
             this.clone.id = `supercard-${operation}-${this.superhero.id}`;
         else
@@ -589,6 +588,15 @@ class Supercard {
         this.#show();
     }
 
+    albumMissingTweaks(){
+        this.clone.classList.add('missing-card');
+        this.detailsButton = this.footer.getElementsByClassName('details-button')[0];
+        this.detailsButton.classList.add('d-none');
+        this.rarityButton.classList.add('d-none');
+        this.image.src = 'img/missing-card.jpg';
+        this.#show();
+    }
+
     exchangeTweaks(){
         this.deleteBtn = this.clone.getElementsByClassName('remove-button')[0];
         this.deleteBtn.classList.remove('d-none');
@@ -596,18 +604,20 @@ class Supercard {
     }
 
     carddetailsTweaks(){
-        this.albumTweaks();
+        // the description box must be after the supercard
+        this.container.insertBefore(this.clone, this.container.firstChild);
+        // albumTweaks
+        this.detailsButton = this.footer.getElementsByClassName('details-button')[0];
+        this.detailsButton.search = `?cid=${this.superhero.id}`;
+        // #show
+        setClickSelectEvtListener(this.clone);
+        this.clone.classList.remove('d-none');
     }
 }
 
 // FRONTEND ONLY
 if(globalThis.window !== undefined){
     // colors used to distinguish the cards selected for an exchange both in the album and exchange pages.
-    const style = window.getComputedStyle(document.body);
-    const SELECTED_OFFERED_COLOR = style.getPropertyValue('--selected-offered-card');
-    const SELECTED_WANTED_COLOR = style.getPropertyValue('--selected-wanted-card');
-    const SELECTED_SELL_COLOR = style.getPropertyValue('--selected-sell-card');
-    const UNSELECTED_COLOR = style.getPropertyValue('--unselected-card');
     
     var exchangeState = new ExchangeState();
     var sellState = new SellState();
@@ -619,27 +629,34 @@ if(globalThis.window !== undefined){
      * @param {string}
      * @returns {boolean}
      */
-    function setColor(card, color){
-        card.style.backgroundColor = color;
-    }
+    // function setColor(card, color){
+    // 	card.style.backgroundColor = color;
+    // }
 
     /**
      * Takes the element of a supercard and its superhero's id, determines the color based on if it is selected or not, rarity and makes it selectable by adding an click event listener.
      */
     function adjustCardColor(card, id){
         if(exchangeState.contains(id, "wanted"))
-            setColor(card, SELECTED_WANTED_COLOR);
+            card.classList.add('wanted-card');
         else if(exchangeState.contains(id, "offered"))
-            setColor(card, SELECTED_OFFERED_COLOR);
+            card.classList.add('offered-card');
         else if(sellState.contains(id)){
             let path = window.location.pathname;
             // the exchange.html exclusion is actually enforced in the callbacks to select a card.
             if(!(path.includes('carddetails.html') || path.includes('exchange.html')))
-                setColor(card, SELECTED_SELL_COLOR);
+                card.classList.add('sell-card');
             // if the flow arrives here, the color should be correct anyway as it is imposed in the colorpalette stylesheet.
         }
-        else
-            setColor(card, UNSELECTED_COLOR);
+        else{
+            clearColorClasses(card);
+        }
+    }
+
+    function clearColorClasses(card){
+        card.classList.remove('wanted-card');
+        card.classList.remove('offered-card');
+        card.classList.remove('sell-card');
     }
 
     /**

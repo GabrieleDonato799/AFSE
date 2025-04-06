@@ -182,7 +182,6 @@ async function addUser(res, user) {
 
         // Inserisce il nuovo utente nel database
         const insertedUser = await client.db(DB_NAME).collection("users").insertOne(user);
-        console.log(createUserAlbum);
         createUserAlbum(insertedUser.insertedId);
 
         // Return a JWS token
@@ -462,6 +461,7 @@ async function getWholeUser(res, uid){
     const user = await getUser(uid);
     
     if (user) {
+        delete user.album_id;
         delete user.password; // prevents leaking the hash
         res.json(user);
     } else {

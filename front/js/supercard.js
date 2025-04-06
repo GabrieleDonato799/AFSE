@@ -78,29 +78,18 @@ function getContent(cid){
  */
 function showSupercard(superhero){
     let card = document.getElementById('supercard');
-    card.id = 'supercard-' + superhero.id;
-
-    let title = card.getElementsByClassName('card-title')[0];
-    let overview = card.getElementsByClassName('card-text')[0];
-    let image = card.getElementsByClassName('card-img')[0];
-    let button = card.getElementsByClassName('btn-primary')[0];
-    let footer = card.getElementsByClassName('card-footer')[0];
     let card_description_container = document.getElementById("card_description");
     let card_description_text = card_description_container.getElementsByClassName('card-text')[0];
     
-    title.innerHTML = superhero.name;
-    image.src = superhero['thumbnail'];
-    footer.firstElementChild.search = `?cid=${superhero.id}`;
     if(superhero.description)
         card_description_text.innerText = `${superhero.description}`;
     else
         card_description_text.innerText = missingDescription;
+    
+    console.log(superhero);
+    const s = new Supercard(superhero, card.parentNode, card);
+    s.carddetailsTweaks();
 
-    // set the rarity color on the supercard
-    // card.style.backgroundColor = `#${superhero.rarity}`;
-    adjustCardColor(card, superhero.id);
-
-    card.classList.remove('d-none')
     card_description_container.classList.remove('d-none');
 }
 
