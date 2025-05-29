@@ -7,6 +7,7 @@ var pageSize = 100;
 var user_id = localStorage.getItem("user_id");
 var userAlbum = undefined;
 var card = document.getElementById('supercard');
+let clearBtn = document.getElementById('clearBtn');
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
@@ -51,6 +52,19 @@ function addWanted(){
     else{
         window.location.href = "album.html?op=wanted";
     }
+}
+
+/**
+ * Updates the clear button depending on the presence or less of cards
+ */
+function updateClearBtn(){
+    console.log(exchangeState);
+    console.log(exchangeState.isEmpty());
+
+    if(exchangeState.isEmpty())
+        clearBtn.setAttribute('disabled', '');
+    else
+        clearBtn.removeAttribute('disabled');
 }
 
 /**
@@ -124,6 +138,7 @@ function showState(){
     showSelectedCards(exchangeState.offered, "offered");
     showSelectedCards(exchangeState.wanted, "wanted");
     hideAddingCards();
+    updateClearBtn();
 }
 
 /**
@@ -185,6 +200,7 @@ function remove(callingElem){
     exchangeState.remove(operation, hero_id);
 
     hideAddingCards();
+    updateClearBtn();
 }
 
 /**
