@@ -30,19 +30,19 @@ else{
 if(user_id === undefined) throw new Error("Unauthorized");
 
 function nextPage(){
-    if(page + 1 < N_PAGES){
+    if(page < N_PAGES){
         page += 1;
-        updatePageBtns(page);
         showSupercards(userAlbum.fullAlbum);
     }
+    updatePageBtns(page);
 }
 
 function toPage(pg){
     if(0 < pg && pg < N_PAGES){
         page = pg;
-        updatePageBtns(page);
         showSupercards(userAlbum.fullAlbum);
     }
+    updatePageBtns(page);
 }
 
 function previousPage(){
@@ -55,10 +55,12 @@ function previousPage(){
 
 /**
  * Updates the page changing buttons with the current page, disables one of them if on the respective boundary of the album.
+ * Also updates the sell button when cards are selected or less.
  */
 function updatePageBtns(page){
     let nextBtns = document.getElementsByName("next_page_button");
     let prevBtns = document.getElementsByName("prev_page_button");
+    let sellBtns = document.getElementsByName("sell_button");
 
     // the pages are shown to start from 1
     prevBtns.forEach(btn => {
@@ -67,6 +69,41 @@ function updatePageBtns(page){
     nextBtns.forEach(btn => {
         btn.innerHTML = "<b>Next"+ (page +1 < N_PAGES ? ` - ${page +2}` : '') +"</b>";
     });
+
+    // Disable buttons if where are on the album boundaries
+    if(page < N_PAGES){
+        nextBtns.forEach(btn => {
+            btn.removeAttribute("disabled");
+        });
+    }
+    else{
+        nextBtns.forEach(btn => {
+            btn.setAttribute("disabled", "");
+        });
+    }
+
+    if(page > 0){
+        prevBtns.forEach(btn => {
+            btn.removeAttribute("disabled");
+        });
+    }
+    else{
+        prevBtns.forEach(btn => {
+            btn.setAttribute("disabled", "");
+        });
+    }
+
+    // Disable the sell buttons if no cards are selected
+    if(sellState.isEmpty()){
+        sellBtns.forEach(btn => {
+            btn.setAttribute("disabled", "");
+        });
+    }
+    else{
+        sellBtns.forEach(btn => {
+            btn.removeAttribute("disabled");
+        });
+    }
 }
 
 /**

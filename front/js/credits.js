@@ -27,7 +27,7 @@ function showOffers(offers){
         const img = clone.getElementsByClassName('card-img-top')[0];
 
         title.innerHTML = offer.title;
-        amount.innerHTML = `${offer.amount} coins for ${offer.price} credits`;
+        amount.innerHTML = `${offer.amount} coins for ${offer.price} €`;
         const imgName = (offer.title).replaceAll(" ", "_");
         img.src = `img/${imgName}.png`;
 
