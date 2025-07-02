@@ -7,7 +7,8 @@ let params = new URLSearchParams(window.location.search);
 let selectFavHero = document.getElementById("inputFavHero");
 let formNick = document.getElementById("formNick");
 let formEmail = document.getElementById("formEmail");
-let formPwd = document.getElementById("formPwd");
+let formOldPwd = document.getElementById("formOldPwd");
+let formNewPwd = document.getElementById("formNewPwd");
 let statusAlert = document.getElementById("statusAlert");
 let user = null;
 
@@ -127,8 +128,8 @@ function changePwd() {
         },
         body: JSON.stringify({
             "email": user.email,
-            "oldpwd": formPwd.oldpassword.value,
-            "newpwd": formPwd.newpassword.value
+            "oldpwd": formOldPwd.oldpassword.value,
+            "newpwd": formNewPwd.newpassword.value
         })
     };
 

@@ -5,6 +5,7 @@
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>Profile</title>
+	<meta name="description" content="Update or delete your profile."/>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
 		integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 	<link rel="stylesheet" href="css/main.css" type="text/css">
@@ -14,11 +15,11 @@
 <body>
 	<div class="container">
 		<%- include('navbar.ejs') %>
-			<div class="divider-half"></div>
 			<div id="statusAlert" class="alert alert-danger d-none" role="alert"></div>
 
 			<div class="row g-0 justify-content-center">
-				<h3 class="col-12 g-4 rounded">General</h3>
+				<!-- my-2 fixes the distance from the divider of the navbar -->
+				<h3 class="col-12 my-2 g-4 rounded">General</h3>
 				<div class="col-12 col-sm-12 col-lg-8 col-xl-6">
 					<div class="card h-100">
 						<div class="card-body content-box rounded">
@@ -28,46 +29,48 @@
 									<img src="user.png" alt="mdo" class="border rounded bg-white"
 										style="max-width:100%; max-height:100%;">
 								</div>
-								<div class="col-8">
+								<div class="col-12 col-8">
 									<h5>My profile</h5>
 									<!-- Change nickname -->
 									<form action="#" method="POST" id="formNick" class="mb-3 input-group">
-										<label for="inputNick" class="input-group-text">Known as</label>
+										<label for="inputNick" class="input-group-text">Nick</label>
 										<input name="newnick" type="text" class="form-control" id="inputNick" required>
 										<button type="submit" class="btn btn-primary"
-											onclick="changeNick(); return false;">Change</button>
+											onclick="changeNick(); return false;">Fix</button>
 									</form>
 									<!-- Change email -->
 									<form action="#" method="POST" id="formEmail" class="mb-3 input-group">
-										<label for="inputNewEmail" class="input-group-text">E-mail</label>
+										<label for="inputNewEmail" class="input-group-text">Email</label>
 										<input name="newemail" type="email" class="form-control" id="inputNewEmail"
 											autocomplete="" aria-describedby="emailHelp" required>
 										<button type="submit" class="btn btn-primary"
-											onclick="changeEmail(); return false;">Change</button>
+											onclick="changeEmail(); return false;">Fix</button>
 									</form>
 								</div>
 								<div class="col-12">
+									<h5>Favorite superhero</h5>
 									<form action="#" method="POST" class="mb-3 input-group">
-										<label for="inputFavHero" class="input-group-text">Favorite superhero</label>
 										<select name="favHero" id="inputFavHero" class="form-select"
 											aria-label="Select your favorite superhero">
 											<option selected>No answer</option>
 										</select>
 										<button type="submit" class="btn btn-primary"
-											onclick="changeFavHero(); return false;">Change</button>
+											onclick="changeFavHero(); return false;">Fix</button>
 									</form>
 
 									<!-- Change password -->
 									<h5>Change password</h5>
-									<form action="#" method="POST" id="formPwd" class="mb-3 input-group">
-										<label for="inputOldPassword" class="input-group-text">Old password</label>
+									<form action="#" method="POST" id="formOldPwd" class="mb-3 input-group">
+										<label for="inputOldPassword" class="input-group-text">Old</label>
 										<input name="oldpassword" type="password" class="form-control"
 											id="inputOldPassword" value="..." autocomplete="current-password" required>
-										<label for="inputNewPassword" class="input-group-text">New password</label>
+									</form>
+									<form action="#" method="POST" id="formNewPwd" class="mb-3 input-group">
+										<label for="inputNewPassword" class="input-group-text">New</label>
 										<input name="newpassword" type="password" class="form-control"
 											id="inputNewPassword" value="..." autocomplete="new-password" required>
 										<button type="submit" class="btn btn-primary"
-											onclick="changePwd(); return false;">Change</button>
+											onclick="changePwd(); return false;">Fix</button>
 									</form>
 								</div>
 							</div>
@@ -107,8 +110,9 @@
 						</div>
 					</div>
 				</div>
-				<div class="divider"></div>
 			</div>
+
+		<%- include('footer.ejs') %>
 	</div>
 
 	<script src="shared/lib.js"></script>

@@ -212,6 +212,7 @@ function select(callingElem){
     sid = Number(callingElem.id.split("-")[1]);
     selectId(callingElem, sid);
     adjustCardColor(callingElem, sid);
+    updatePageBtns(page);
 }
 
 /**

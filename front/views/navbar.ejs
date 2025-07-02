@@ -1,7 +1,8 @@
 <noscript>
     <button class="btn btn-danger disabled-js" type="submit">Please enable JS otherwise the site won't work!</button>
 </noscript>
-<nav id="navbar" class="navbar navbar-expand-lg rounded" data-bs-theme="dark" >
+<!-- <div class="footer-box rounded position-fixed bottom-0 start-50 translate-middle-x" style="width:inherit;max-width: inherit;"></div> -->
+<nav id="navbar" class="navbar navbar-expand-lg rounded position-fixed top-0 start-50 translate-middle-x" style="width:inherit;max-width: inherit; z-index:1000;" data-bs-theme="dark" >
     <div class="container-fluid">
         <a class="navbar-brand" href="#"><strong><h1>AFSE</h1></strong></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +45,8 @@
         </ul>
     </div>
 </nav>
-<div class="divider-half"></div>
+<!-- notifyError is a target for the user's viewport, used to notify errors with the user feedback alert. It is higher because the navbar covers the alert if we directly move to it. -->
+<div id="notifyError" class="divider"></div>
+<div class="divider"></div>
 <!-- this alert can be used by all pages to alert the user of the wrong things it may have done -->
 <div id="userFeedbackAlert" class="alert alert-danger d-none" role="alert"></div>

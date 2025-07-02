@@ -105,7 +105,7 @@ function setUserFeedbackAlert(message, moveView=true, timeout=5000){
     userFeedbackAlert.innerHTML = message;
     if(moveView){
         setVisibleUserFeedbackAlert(true);
-        window.location.hash = '#userFeedbackAlert';
+        window.location.hash = '#notifyError';
     }
     if(timeout){
         setTimeout(() => {

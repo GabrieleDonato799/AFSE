@@ -74,6 +74,7 @@ function jwtauth(){
                 '/register.html',
                 '/js/login.js',
                 '/js/register.js',
+                '/img/afse_logo.png',
             ].includes(req.path)){
                 // res.status(401).send('401 Unauthorized');
                 console.log(req.path);
