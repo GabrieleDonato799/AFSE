@@ -46,14 +46,14 @@ async function createTrade(req, res){
             );
             
             if(possessedCards == null){
-                throw new Error("The user doesn't have the cards xe is trying to exchange.");
+                throw new Error("The user doesn't have the cards xe is trying to exchange.", {cause:"integrityChecks"});
             }
             
             // check if the user has the cards he asks for
             possessedCards = possessedCards.supercards;
             for(let w of wants){
                 if(possessedCards.includes(w)){
-                    throw new Error("The user can't ask for cards xe owns.");
+                    throw new Error("The user can't ask for cards xe owns.", {cause:"integrityChecks"});
                 }
             }
             
@@ -67,7 +67,7 @@ async function createTrade(req, res){
                 }
             ).toArray();
             if(activeTrades.length > 0){
-                throw new Error("The user can't ask for a card xe already asked for, blocked in an active trade.");
+                throw new Error("The user can't ask for a card xe already asked for, blocked in an active trade.", {cause:"integrityChecks"});
             }
             await collAlbums.updateOne(
                 { user_id: offerer_objid },
@@ -88,7 +88,10 @@ async function createTrade(req, res){
     }
     catch(e){
         console.error(e);
-        res.status(400).json({error: `${e.message}`});
+        if(e.cause === "integrityChecks")
+            res.status(400).json({error: e.message});
+        else    
+            res.status(400).json({error: "Trade aborted by an unknown error, nothing changed, please retry later or contact us!"});
     }
     finally {
         await session.endSession();
