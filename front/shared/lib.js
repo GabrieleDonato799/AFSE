@@ -242,7 +242,7 @@ class ExchangeState{
         let state = this.#retrieveState();
 
         if(typeof(id) !== "number"){
-            throw Error("ExchangeState accepts only numbers");
+            throw Error("ExchangeState accepts only numbers, received: " + typeof(id));
         }
 
         if(op === "both")

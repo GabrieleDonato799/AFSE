@@ -113,18 +113,26 @@ async function getUserId(email, pwd){
 /**
  * Checks if a password meets the application requirements
  * Returns false and sets the response status on error.
- * @param {String} pwd 
+ * @param {express.Response} res
+ * @param {String} pwd
+ * @param {String} email
  */
-function checkPwd(res, pwd){
+function checkPwd(res, pwd, email){
+    let result = true;
     if (typeof(pwd) !== "string"){
         res.status(400).json({ error: "The password is missing"});
-        return false;
+        result = false;
     }
-    if (pwd.length < 8) {
+    else if (pwd.length < 8) {
         res.status(400).json({ error: "The password is too short or missing"});
-        return false;
+        result = false;
     }
-    return true;
+    else if (pwd === email){
+        res.status(400).json({ error: "The password must be different from the email" });
+        result = false;
+    }
+    
+    return result;
 }
 
 /**
@@ -151,7 +159,9 @@ async function addUser(res, user) {
     // Controlla se tutti i campi obbligatori sono presenti
     if (user.nick && user.email && user.password) {
         // Controlla se i campi soddisfano i requisiti
-        checkPwd(res, user.password);
+        if(!checkPwd(res, user.password, user.email)){
+            return;
+        }
     } else {
         res.status(400).json({ error: "Missing fields" });
         return;
@@ -410,7 +420,7 @@ async function updateUserEmail(res, uid, oldemail, newemail){
 async function updateUserPwd(res, uid, email, oldpwd, newpwd) {
     var user = undefined;
     // check if the new password respects the requirements
-    if(!checkPwd(res, newpwd)) return;
+    if(!checkPwd(res, newpwd, email)) return;
 
     const uidMatch = await getUserId(email, oldpwd);
 

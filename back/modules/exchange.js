@@ -4,6 +4,7 @@
 
 const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
+const { getMarvelCharacterById } = require('./rarity.js');
 
 async function createTrade(req, res){
     const offerer = req.body.offerer;
@@ -46,6 +47,19 @@ async function getTrades(req, res, uid){
             }
         );
         for await (let t of response){
+            t.offers_names = [];
+            t.wants_names = [];
+
+            // add names to the characters to be displayed
+            for(let char_id of t.offers){
+                let hero = await getMarvelCharacterById(char_id);
+                t.offers_names.push(hero.name);
+            }
+            for(let char_id of t.wants){
+                let hero = await getMarvelCharacterById(char_id);
+                t.wants_names.push(hero.name);
+            }
+
             trades.push(t);
         }
 

@@ -236,7 +236,9 @@ function showTrades(trades){
     cont.innerHTML = "";
     cont.appendChild(template);
 
+    let N=0; // number of the trade to display
     for(let trade of trades){   
+        ++N;
         let clone = template.cloneNode(true);
 
         let titleButton = clone.getElementsByTagName("button")[0];
@@ -244,12 +246,16 @@ function showTrades(trades){
         let id = trade._id;
 
         // display the data of the trade
-        titleButton.innerHTML = id;
-        body.innerHTML = trade.offerer+"<br>";
-        body.innerHTML += trade.wanter+"<br>";
-        for(let o of trade.offers)
+        // titleButton.innerHTML = id;
+        titleButton.innerHTML = N;
+        body.innerHTML = "";
+        // body.innerHTML = trade.offerer+"<br>"; // name of the users
+        // body.innerHTML += trade.wanter+"<br>";
+        body.innerHTML += "<b>YOU offered:</b><br>";
+        for(let o of trade.offers_names)
             body.innerHTML += o+"<br>";
-        for(let w of trade.wants)
+        body.innerHTML += "<b>YOU wanted:</b><br>";
+        for(let w of trade.wants_names)
             body.innerHTML += w+"<br>";
 
         // fix the accordion's collapse id

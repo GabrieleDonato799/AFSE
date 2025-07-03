@@ -7,7 +7,11 @@ const PAGE_SIZE = 20;
  * Contains the id and respective Supercard objects of the currently displayed supercards, this makes calling their tweaking methods easier when selling instead of removing all cards and re-fetching them.
  */
 const displayedSupercards = {};
-let page = 0;
+/**
+ * Pages are calculated when the server replies with the info about the album. They are shown to start from 1 instead of 0.
+ */
+var page = 0;
+var N_PAGES = 0;
 let user_id = localStorage.getItem("user_id");
 let userAlbum = undefined;
 let params = new URLSearchParams(window.location.search);
@@ -23,14 +27,43 @@ else{
 if(user_id === undefined) throw new Error("Unauthorized");
 
 function nextPage(){
-    page += 1;
-    showSupercards(userAlbum.fullAlbum);
+    if(page + 1 < N_PAGES){
+        page += 1;
+        updatePageBtns(page);
+        showSupercards(userAlbum.fullAlbum);
+    }
+}
+
+function toPage(pg){
+    if(0 < pg && pg < N_PAGES){
+        page = pg;
+        updatePageBtns(page);
+        showSupercards(userAlbum.fullAlbum);
+    }
 }
 
 function previousPage(){
-    if(page > 0)
+    if(page > 0){
         page -= 1;
-    showSupercards(userAlbum.fullAlbum);
+        updatePageBtns(page);
+        showSupercards(userAlbum.fullAlbum);
+    }
+}
+
+/**
+ * Updates the page changing buttons with the current page, disables one of them if on the respective boundary of the album.
+ */
+function updatePageBtns(page){
+    let nextBtns = document.getElementsByName("next_page_button");
+    let prevBtns = document.getElementsByName("prev_page_button");
+
+    // the pages are shown to start from 1
+    prevBtns.forEach(btn => {
+        btn.innerHTML = "<b>Previous"+ (page -1 >= 0 ? ` - ${page}` : '') +"</b>";
+    });
+    nextBtns.forEach(btn => {
+        btn.innerHTML = "<b>Next"+ (page +1 < N_PAGES ? ` - ${page +2}` : '') +"</b>";
+    });
 }
 
 /**
@@ -201,7 +234,13 @@ function sell(){
                 if(res.ok){
                     console.log(`I've deleted ${sellState.cards}`);
                     sellState.cards.forEach(cid => {
-                        displayedSupercards[`${cid}`].albumMissingTweaks();
+                        try{
+                            displayedSupercards[`${cid}`].albumMissingTweaks();
+                        }
+                        catch(e){
+                            // this fails when we want to sell a card which is not in the current page
+                            console.log(e);
+                        }
                     });
                     sellState.clear();
                     updateCoinsCounter(coinsCounter, json.balance);
@@ -233,7 +272,9 @@ function sell(){
 // 		card.remove();
 // }
 
-getUserAlbum(function processUserAlbum(album){    
+getUserAlbum(function processUserAlbum(album){
+    N_PAGES = Math.round(userAlbum.fullAlbum.length/PAGE_SIZE);
+    updatePageBtns(page);
     showSupercards(album.fullAlbum);
     updateProgress(album);
 });

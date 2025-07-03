@@ -27,19 +27,21 @@ async function returnCharacterById(cid, res){
     let hero = await getCharacterById(cid);
 
     if(!hero){
-        res.json({error: "Error retrieving the character"});
+        // try to fall back to the cached json file
+        hero = getMarvelCharacterById(cid);
+        if(!hero)
+            res.json({error: "Error retrieving the character"});
     }
-    else{
-        try{
-            let char = getMarvelCharacterById(cid);
-            hero.rarity = char.rarity;
-            res.json(hero);
-        }
-        catch(e){
-            console.log(e);
-            res.status(500);
-            res.json({Error: "Error retrieving the character"});
-        }
+
+    try{
+        let char = getMarvelCharacterById(cid);
+        hero.rarity = char.rarity;
+        res.json(hero);
+    }
+    catch(e){
+        console.log(e);
+        res.status(500);
+        res.json({Error: "Error retrieving the character"});
     }
 }
 
