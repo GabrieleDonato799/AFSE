@@ -100,6 +100,19 @@ function checkCid(cid, res){
     return cid;
 }
 
+/**
+ * Takes a search term and the response object, looks up for matches in the characters cache and returns them.
+ * @param {string} term 
+ * @param {Response} res
+ * @returns {array}
+ */
+function searchInCache(term, res){
+    let matches = marvelCache.characters
+                    .filter(hero => {return hero.name.toLowerCase().includes(term.toLowerCase())})
+                    .map(hero => hero.id);
+    res.json(matches);
+}
+
 // characters routes
 app.get("/characters/names", (req, res) => {
     let data = [];
@@ -135,6 +148,12 @@ app.get("/characters/:cid/events", (req, res) => {
     if((cid = checkCid(cid, res)) === -1) return;
 
     getCharacterContent("events", cid, res);
+});
+
+app.post("/characters/search", (req, res) => {
+    let term = req.body.term;
+    console.log(req.body);
+    searchInCache(term, res);
 });
 
 module.exports = { getCharacterById };

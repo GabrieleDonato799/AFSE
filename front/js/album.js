@@ -13,12 +13,22 @@ const displayedSupercards = {};
 var page = 0;
 var N_PAGES = 0;
 let user_id = localStorage.getItem("user_id");
+/**
+ * The userAlbum contains the information about which cards the user possessed and which not, how many cards exist and so on.
+ * The searchTermAlbum contains the cards that the user searched with the search bar.
+ * The currentAlbum points to the currently shown album, used to change page without loosing the current search term album.
+ */
 let userAlbum = undefined;
+let searchTermAlbum = undefined;
+let currentAlbum = undefined;
+
 let params = new URLSearchParams(window.location.search);
 let op = params.get("op");
 
 // This prevents that multiple fetches of the page will continuosly visibly override the cards contents. Only the fetch response that corresponds to the last timestamp of fetch will be applied. This is just a counter incremented at every fetch of a page.
 let pageFetchTS = 0;
+// The latest search is always the one that is displayed.
+let searchFetchTS = 0;
 
 if(exchangeState.checkOp(op)){
     document.getElementsByName("exchange_button").forEach((elem) => elem.classList.remove("d-none"));
@@ -32,7 +42,7 @@ if(user_id === undefined) throw new Error("Unauthorized");
 function nextPage(){
     if(page < N_PAGES){
         page += 1;
-        showSupercards(userAlbum.fullAlbum);
+        showSupercards(currentAlbum);
     }
     updatePageBtns(page);
 }
@@ -40,7 +50,7 @@ function nextPage(){
 function toPage(pg){
     if(0 < pg && pg < N_PAGES){
         page = pg;
-        showSupercards(userAlbum.fullAlbum);
+        showSupercards(currentAlbum);
     }
     updatePageBtns(page);
 }
@@ -49,18 +59,20 @@ function previousPage(){
     if(page > 0){
         page -= 1;
         updatePageBtns(page);
-        showSupercards(userAlbum.fullAlbum);
+        showSupercards(currentAlbum);
     }
 }
 
 /**
- * Updates the page changing buttons with the current page, disables one of them if on the respective boundary of the album.
+ * Takes the current page to update the page changing buttons and disable one of them if on the respective boundary of the album. Does not update the current page.
  * Also updates the sell button when cards are selected or less.
  */
 function updatePageBtns(page){
     let nextBtns = document.getElementsByName("next_page_button");
     let prevBtns = document.getElementsByName("prev_page_button");
     let sellBtns = document.getElementsByName("sell_button");
+
+    N_PAGES = Math.round(currentAlbum.length/PAGE_SIZE);
 
     // the pages are shown to start from 1
     prevBtns.forEach(btn => {
@@ -115,7 +127,8 @@ function showSupercards(album){
     const container = document.getElementById('container');
     container.innerHTML = "";
     container.append(card);
-    const pgsize = Math.min(album.length, (page+1)*PAGE_SIZE);
+    let topLimit = Math.min(album.length, (page+1)*PAGE_SIZE);
+    
     const placeHolderCharacter = {
         id: 0,
         name: "Still coming!",
@@ -129,7 +142,7 @@ function showSupercards(album){
     // delete all currently displayed Supercard objects
     Object.keys(displayedSupercards).forEach(k => delete displayedSupercards[k]);
 
-    for (i = page*PAGE_SIZE; i < pgsize; i++) {
+    for (i = page*PAGE_SIZE; i < topLimit; i++) {
         const thatI = i; // i changes during the fetch call and its resolution, this way we know that in its context we have a fixed value.
         displayedSupercards[`${album[thatI]}`] = new Supercard(placeHolderCharacter, container, card);
 
@@ -165,6 +178,7 @@ async function getUserAlbum(action){
                     userAlbum = json;
                     // precalculate the sorted set of all cards, missing and collected
                     userAlbum.fullAlbum = userAlbum.supercards.concat(userAlbum.missing).sort((a, b) => {return a < b ? -1 : (a == b ? 0 : 1)});
+                    currentAlbum = userAlbum.fullAlbum;
                     if(action)
                         action(userAlbum);
                 })
@@ -186,7 +200,7 @@ function updateProgress(album){
     progressBar.style.width = `${(album.collected/album.total)*100}%`
     progressBar.innerText = `${album.collected}/${album.total}`;
 
-    albumProgress.classList.remove('d-none');  
+    albumProgress.classList.remove('d-none');
 }
 
 /**
@@ -258,7 +272,7 @@ function selectId(callingElem, sid){
                 // Error
                 setUserFeedbackAlert(`You can't select more than ${MAX_SELECTED_CARDS_TO_SELL} cards to sell.`);
             }
-        }  
+        }
     }
 }
 
@@ -333,8 +347,57 @@ function sell(){
 // 		card.remove();
 // }
 
+/**
+ * Takes a search term and sends it to the backend, the latter returns all characters id that match the search term
+ * @param {string} term
+ * @returns {array}
+ */
+function search(term){
+    if(term.length < 3){
+        searchTermAlbum = undefined;
+        currentAlbum = userAlbum.fullAlbum;
+        showSupercards(currentAlbum);
+        page = 0;
+        updatePageBtns(0);
+        return [];
+    }
+    
+    const options = {
+        "credentials": 'include',
+        "method": "POST",
+        "body": JSON.stringify({
+            term: term
+        }),
+        "headers": {
+            "Content-Type": "application/json",
+        }
+    };
+
+    searchFetchTS += 1;
+    const thisSearchFetchTS = searchFetchTS;
+
+    fetch(`${url_backend}/characters/search`, options)
+        .then(res => {
+            res.json().then(json => {
+                if(res.ok && searchFetchTS === thisSearchFetchTS){
+                    searchTermAlbum = json;
+                    
+                    page = 0;
+                    currentAlbum = searchTermAlbum;
+                    updatePageBtns(0); // fix total number of pages
+                    showSupercards(currentAlbum);
+                }
+                else{
+                    console.error(json.error);
+                }
+            });
+        })
+        .catch(_ => {
+            console.error(_);
+        });
+}
+
 getUserAlbum(function processUserAlbum(album){
-    N_PAGES = Math.round(userAlbum.fullAlbum.length/PAGE_SIZE);
     updatePageBtns(page);
     showSupercards(album.fullAlbum);
     updateProgress(album);
