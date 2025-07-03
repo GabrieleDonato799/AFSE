@@ -1,4 +1,166 @@
-@import url('colorpalette.css');
+/* "COLOR PALETTE" STYLESHEET */
+:root{
+    --prussian-blue: #1c3144;
+    --engineering-orange: #d00000;
+    --selective-yellow: #ffba08;
+    --cadet-gray: #a2aebb;
+    --steel-blue: #3f88c5;
+    --unselected-card: var(--steel-blue);
+    --selected-offered-card: #a31aff;
+    --selected-wanted-card: #ffa31a;
+    --selected-sell-card: var(--engineering-orange);
+    --white: #fefefe;
+}
+
+.filter-white{
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(27deg) brightness(103%) contrast(103%);
+}
+
+body {
+    /* https://getbootstrap.com/docs/5.3/customize/color/ */
+    background-color: var(--bs-info-bg-subtle);
+}
+.content-box {
+    color: var(--white);
+    border: var(--steel-blue);
+    background-color: var(--steel-blue);
+}
+.container {
+    /* background-color: #9b92ff; */
+    background-color: var(--bs-info);
+    min-height: 100vh;
+}
+h1, h2, h3{
+    /* background-color: #9b3430; */
+    color: var(--bs-light);
+    background-color: var(--prussian-blue);
+}
+.card {
+    border-color: var(--prussian-blue);
+    /* border-color: var(--white); */
+}
+.card-title {
+    color: var(--bs-light);
+}
+/* "related content" are series, comics and events */
+.supercard, .offer, .related-content {
+    background-color: var(--steel-blue);
+}
+.missing-card {
+    background-color: var(--cadet-gray);
+}
+.wanted-card {
+    background-color: var(--selected-wanted-card);
+}
+.offered-card {
+    background-color: var(--selected-offered-card);
+}
+.sell-card {
+    background-color: var(--selected-sell-card);
+}
+div.related-content > div.card-body > p.card-text {
+    color: var(--bs-light);
+}
+/* the "related content" description and the supercard description in carddetails.html */
+div.card-body > h5 {
+    color: var(--bs-light);
+}
+.accordion-header {
+    border-color: var(--prussian-blue);
+}
+.accordion-button.collapsed, .accordion-button:not(.collapsed) {
+    color: var(--bs-light);
+    border-color: transparent;
+    background-color: var(--prussian-blue);
+    box-shadow: transparent;
+}
+.accordion-button.collapsed::after, .accordion-button:not(.collapsed)::after {
+    /* set the icon white, see https://stackoverflow.com/a/66232380/22721622 */
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23fff'%3e%3cpath fill-rule='evenodd' d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3e%3c/svg%3e");
+}
+.accordion-item {
+    background-color: var(--prussian-blue);
+}
+.accordion {
+    background-color: var(--steel-blue);
+    border-color: var(--prussian-blue);
+}
+.progress-bar {
+    color: green;
+    background-color: greenyellow;
+}
+.rarity-button, .rarity-button:hover {
+    color: var(--white) !important;
+    border-color: var(--white) !important;
+    transform: scale(1.0) !important;
+}
+/* interactivity */
+.supercard:hover {
+    transform: scale(1.1);
+}
+/* "Details" button under the supercard */
+a.btn {
+    border-color: var(--prussian-blue);
+}
+.btn:not(.d-none) {
+    /* background-color: #d7ad14; */
+    /* border-color: #411312; */
+}
+.btn:not(.d-none):hover {
+    /* background-color: #ebd275; */
+    transform: scale(1.1);
+}
+.btn, .btn:hover {
+    border-color: var(--prussian-blue);
+}
+/* navbar */
+.navbar {
+    background-color: var(--prussian-blue);
+    color: var(--white);
+}
+.icon {
+    fill: var(--white) !important;
+}
+/* login & registration forms */
+.input-group > label {
+    background-color: var(--steel-blue);
+    color: var(--white);
+    border-color: var(--prussian-blue);
+}
+.input-group > input{
+    border-color: var(--prussian-blue);
+}
+.input-group > select {
+    border-color: var(--prussian-blue);
+}
+
+.footer svg{
+    /* https://stackoverflow.com/a/53336754/22721622 */
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(27deg) brightness(103%) contrast(103%);
+}
+.footer svg:hover{
+    rotate: 360deg;
+    scale: 1.2;
+    transition-duration: 0.3s;
+}
+.footer img{
+    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(27deg) brightness(103%) contrast(103%);
+}
+.footer img:hover{
+    rotate: 360deg;
+    scale: 1.2;
+    transition-duration: 0.3s;
+}
+
+.footer-box{
+    color: var(--white);
+    border: var(--prussian-blue);
+    background-color: var(--prussian-blue);
+}
+
+
+
+/* "MAIN" STYLESHEET */
 
 /* body {
     padding-top: 3.4em;
@@ -25,6 +187,9 @@
 }
 .divider-half {
     height: 1.5em;
+}
+.divider-quarter {
+    height: 0.75em;
 }
 .disabled-js {
     pointer-events: none;

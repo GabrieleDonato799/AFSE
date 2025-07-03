@@ -64,7 +64,6 @@ function jwtauth(){
                 '/shared/lib.js',
                 '/js/navbar.js',
                 '/css/main.css',
-                '/css/colorpalette.css',
                 '/account/login',
                 '/account/register',
                 '/characters/names',
