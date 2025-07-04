@@ -86,12 +86,18 @@ function updateCoinsCounter(counterE, balance){
  * Takes a message and whether to move the view to the alert. The message will override the one in the navbar' user alert.
  * @param {string} message
  * @param {bool} moveView
+ * @param {number} timeout The time after which the alert is hidden
  */
-function setUserFeedbackAlert(message, moveView=true){
+function setUserFeedbackAlert(message, moveView=true, timeout=5000){
     userFeedbackAlert.innerHTML = message;
     if(moveView){
         setVisibleUserFeedbackAlert(true);
         window.location.hash = '#userFeedbackAlert';
+    }
+    if(timeout){
+        setTimeout(() => {
+            setVisibleUserFeedbackAlert(false);
+        }, timeout);
     }
 }
 
