@@ -25,6 +25,11 @@ let currentAlbum = undefined;
 let params = new URLSearchParams(window.location.search);
 let op = params.get("op");
 
+let showPossessedCards = localStorage.getItem("showPossessedCards");
+let showMissingCards = localStorage.getItem("showMissingCards");
+document.getElementById('checkPossessedCards').checked = (showPossessedCards === 'true');
+document.getElementById('checkMissingCards').checked = (showMissingCards === 'true');
+
 // This prevents that multiple fetches of the page will continuosly visibly override the cards contents. Only the fetch response that corresponds to the last timestamp of fetch will be applied. This is just a counter incremented at every fetch of a page.
 let pageFetchTS = 0;
 // The latest search is always the one that is displayed.
@@ -154,10 +159,14 @@ function showSupercards(album){
                     else{
                         if(thisPageFetchTS === pageFetchTS){
                             displayedSupercards[`${album[thatI]}`].setSuperhero(json);
-                            if(userAlbum.supercards.includes(album[thatI]))
-                                displayedSupercards[`${album[thatI]}`].albumTweaks();
-                            else
-                                displayedSupercards[`${album[thatI]}`].albumMissingTweaks();
+                            if(userAlbum.supercards.includes(album[thatI])){
+                                if(showPossessedCards)
+                                    displayedSupercards[`${album[thatI]}`].albumTweaks();
+                            }
+                            else{
+                                if(showMissingCards)
+                                    displayedSupercards[`${album[thatI]}`].albumMissingTweaks();
+                            }
                         }
                     }
                 })
@@ -396,6 +405,16 @@ function search(term){
         .catch(_ => {
             console.error(_);
         });
+}
+
+function updatedFlagsClbk(){
+    showPossessedCards = document.getElementById('checkPossessedCards').checked;
+    showMissingCards = document.getElementById('checkMissingCards').checked;
+
+    localStorage.setItem("showPossessedCards", showPossessedCards);
+    localStorage.setItem("showMissingCards", showMissingCards);
+
+    showSupercards(currentAlbum);
 }
 
 getUserAlbum(function processUserAlbum(album){

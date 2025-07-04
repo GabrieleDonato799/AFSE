@@ -61,6 +61,10 @@ function login() {
             }else{
                 localStorage.setItem("user_id", response.id);
                 localStorage.setItem("user_nick", response.nick);
+                if(localStorage.getItem("showPossessedCards") === null)
+                    localStorage.setItem("showPossessedCards", true);
+                if(localStorage.getItem("showMissingCards") === null)
+                    localStorage.setItem("showMissingCards", true);
                 exchangeState.clear();
                 sellState.clear();
                 window.location.href = "album.html";
