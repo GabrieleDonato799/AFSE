@@ -154,7 +154,7 @@ async function deleteAccount() {
     };
 
     statusAlert.classList.add("d-none");
-    let res = commonFetch(`${url_backend}/account`, options);
+    let res = await commonFetch(`${url_backend}/account`, options);
     if(res){
         setTimeout(() => {
             window.location.href = `login.html?logout=y`;

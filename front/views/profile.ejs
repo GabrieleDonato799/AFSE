@@ -97,11 +97,11 @@
 										</div>
 										<div class="col-auto">
 											<input name="password" type="password" value="..." class="form-control"
-												id="inputPasswordDelete">
+												id="inputPasswordDelete" onchange="document.getElementById('btnDeleteAccount').disabled = false;">
 										</div>
 										<div class="col-auto">
-											<button type="submit" class="btn btn-primary"
-												onclick="deleteAccount(); return false;" required>Delete</button>
+											<button id="btnDeleteAccount" type="submit" class="btn btn-primary"
+												onclick="deleteAccount(); return false;" disabled>Delete</button>
 										</div>
 									</div>
 								</form>
