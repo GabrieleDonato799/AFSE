@@ -66,6 +66,7 @@ function register() {
             if(response.ok){
                 response.json().then(json => {
                     localStorage.setItem("user_id", json._id);
+                    localStorage.setItem("user_nick", json.nick);
                     exchangeState.clear();
                     sellState.clear();
 

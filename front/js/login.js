@@ -60,6 +60,7 @@ function login() {
                 setUserFeedbackAlert(`${response.error}`);
             }else{
                 localStorage.setItem("user_id", response.id);
+                localStorage.setItem("user_nick", response.nick);
                 exchangeState.clear();
                 sellState.clear();
                 window.location.href = "album.html";
@@ -74,6 +75,7 @@ function login() {
  */
 function logout(){
     localStorage.removeItem("user_id");
+    localStorage.removeItem("user_nick");
     exchangeState.clear();
     sellState.clear();
     window.location.href = "login.html";

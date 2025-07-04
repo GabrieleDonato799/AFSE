@@ -32,6 +32,7 @@ async function ifLogged(){
     
     if(localStorage.getItem('user_id') !== null){
         unlogTab.classList.remove('d-none');
+        setUsersNick();
         getUserBalance();
     }
     else{
@@ -80,6 +81,18 @@ async function getUserBalance(){
 function updateCoinsCounter(counterE, balance){
     counterE.innerHTML = `<strong>${balance} coins</strong>`;
     counterE.parentElement.classList.remove('d-none');
+}
+
+/**
+ * Sets the current user's nickname on the navbar.
+ * Takes the nick from the localstorage if the user is logged in, this is meant to be called from ifLogged().
+ */
+async function setUsersNick(){
+    const nickElem = document.getElementById("user-nick");
+
+    const nick = localStorage.getItem("user_nick");
+    nickElem.innerHTML = `<b>Welcome back ${nick}!</b>`;
+    nickElem.parentNode.classList.remove('d-none');
 }
 
 /**
