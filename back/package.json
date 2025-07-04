@@ -14,6 +14,7 @@
   "license": "ISC",
   "description": "Gestione degli utenti e dei loro album",
   "dependencies": {
+    "argon2": "^0.43.0",
     "body-parser": "^1.20.2",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",

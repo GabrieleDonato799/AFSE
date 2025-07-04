@@ -2,7 +2,9 @@
  * @module back/user
  */
 
-const { app, client, DB_NAME, hashSha256, optionsJWS } = require('./common.js');
+const { app, client, DB_NAME, hashSaltArgon2, verifySaltedHashArgon2, optionsJWS } = require('./common.js');
+const argon2 = require('argon2');
+const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
 const { genJWS } = require('./auth');
 
@@ -92,15 +94,15 @@ async function deleteUser(res, uid, email, pwd){
  */
 async function getUserId(email, pwd){
     var uid = null;
-    pwd = hashSha256(pwd);
 
     try{
-        // Cerca un utente con l'email e la password specificate
-        uid = await client.db(DB_NAME).collection("users").findOne({
-            email: email,
-            password: pwd
+        // Search up a user with the only email (internal identificator of the user)
+        user = await client.db(DB_NAME).collection("users").findOne({
+            email: email
         });
-        uid = uid._id.toHexString();
+        const matches = await verifySaltedHashArgon2(user.password, pwd);
+        if(!matches) throw Error("Wrong Credentials");
+        uid = user._id.toHexString();
     }
     catch(e){
         console.log(e);
@@ -167,7 +169,7 @@ async function addUser(res, user) {
         return;
     }
 
-    user.password = hashSha256(user.password)
+    user.password = await hashSaltArgon2(user.password);
     user.balance = 0;
 
     try {
@@ -252,11 +254,14 @@ async function loginUser(res, email, password) {
 
     try{
         // Cerca un utente con l'email e la password specificate
+        // TODO: to speedup the login return the entire user
         var uid = await getUserId(email, password);
+        var user = await getUser(uid);
+        console.log(user);
         if (uid) {
             const {tok, opts} = genJWS(uid, admin=false);
             res.cookie('session_token', tok, opts);
-            res.json({ id: uid });
+            res.json({ id: uid, nick: user.nick });
         } else {
             res.status(404).json({ error: "Wrong credentials" });
         }
@@ -429,7 +434,7 @@ async function updateUserPwd(res, uid, email, oldpwd, newpwd) {
         res.status(401).json({ error: "The old password provided does not match the user's old password." });
     }
     else{
-        newpwd = hashSha256(newpwd);
+        newpwd = await hashSaltArgon2(newpwd);
         try {
             const result = await client.db(DB_NAME).collection("users").updateOne(
                 {

@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const process = require('process');
 const express = require('express');
 const { MongoClient } = require('mongodb');
+const argon2 = require('argon2');
 
 const HOST = "0.0.0.0";
 const PORT = 3005;
@@ -26,6 +27,24 @@ const app = express();
 
 var client = new MongoClient(mAtlasURI);
 
+/**
+ * Takes a string and returns a salted hash
+ * @param {string} input The data to be salt-hashed
+ */
+async function hashSaltArgon2(input){
+    // The salt is automatically generated and is part of the parametrised hash, see here https://github.com/ranisalt/node-argon2/issues/76#issuecomment-291553840
+    return await argon2.hash(input);
+}
+
+/**
+ * Takes the salted hash and a password, returns whether they match or not
+ * @param {string} input The data to be salt-hashed
+ * @returns {boolean}
+ */
+async function verifySaltedHashArgon2(hash, password){
+    return await argon2.verify(hash, password);
+}
+
 function hashSha256(input){
     return crypto.createHash('sha256')
     .update(input)
@@ -37,5 +56,5 @@ function hashSha256(input){
 // });
 
 module.exports = {
-    app, client, HOST, PORT, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET, hashSha256, optionsJWS
+    app, client, HOST, PORT, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET, hashSha256, hashSaltArgon2, verifySaltedHashArgon2, optionsJWS
 };
