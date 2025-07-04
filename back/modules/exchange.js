@@ -62,7 +62,8 @@ async function createTrade(req, res){
                 {
                     $and: [
                         { offerer: offerer_objid },
-                        { wants: { $in: wants } }
+                        { wants: { $in: wants } },
+                        { matched: { $ne: true } }
                     ]
                 }
             ).toArray();
@@ -131,6 +132,11 @@ async function deleteTrade(req, res){
                 ] }
             );
 
+            // Can't delete an already matched trade
+            if(trade.matched){
+                throw Error(`Can't delete a matched trade`, { cause: "integrityChecks" });
+            }
+
             // give the offered cards back to the user
             let updateStatus = await collAlbums.updateOne(
                 { user_id: userId },
@@ -152,6 +158,8 @@ async function deleteTrade(req, res){
     }
     catch(e){
         console.error(e);
+        if(e.cause === "integrityChecks")
+            res.status(400).json({error: e.message});           
     }
     finally{
         await session.endSession();
@@ -211,7 +219,8 @@ async function matchTrade(t1){
                 { $and: [
                     { wants: { $eq: t1.offers } },
                     { offers: { $eq: t1.wants } },
-                    { offerer: { $ne: t1.offerer } }
+                    { offerer: { $ne: t1.offerer } },
+                    { matched: { $ne: true } }
                     // I don't check if the wanter is the user itself that offers, this integrity check must be enforced before creating the trade
                 ] }
             ).toArray();
@@ -231,6 +240,16 @@ async function matchTrade(t1){
                 await collAlbums.updateOne(
                     { user_id: t1.offerer },
                     { $addToSet: { supercards: { $each: t2.offers } } }
+                )
+
+                // Set the matched flag on both trades
+                await collTrades.updateMany(
+                    {
+                        $or: [ { _id: t1._id }, { _id: t2._id} ]
+                    },
+                    {
+                        $set: { matched: true }
+                    }
                 )
             }
         }, transactionOptions);

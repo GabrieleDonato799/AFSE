@@ -133,6 +133,10 @@ function createCollections(){
                             bsonType: "array",
                             description: "'wants' must be an array and is required. The title will be used by the server servicing the corresponding images."
                         },
+                        matched: {
+                            bsonType: "bool",
+                            description: "'matched' must be a boolean and is not required, it is set automatically by the server to show that a trade has been matched."
+                        }
                     }
                 }
             }

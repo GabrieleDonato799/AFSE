@@ -45,9 +45,13 @@ async function generatePacket(res, uid){
                 {user_id: ObjectId.createFromHexString(uid)},
             );
 
-            // Get the user's trades, we don't want to give out cards xe owns but are being offered or wanted in a trade.
+            // Get the user's trades, we don't want to give out cards xe owns but are being offered or wanted in an active trade.
             const trades = await collTrades.find(
-                {offerer: ObjectId.createFromHexString(uid)}
+                { $and: [
+                        { offerer: ObjectId.createFromHexString(uid) },
+                        { matched: { $ne: true } }
+                    ]
+                }
             ).toArray();
             let inTradeCards = [];
             for(t of trades){

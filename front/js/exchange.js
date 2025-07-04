@@ -261,7 +261,10 @@ function removeTrade(callingElem, tradeId){
                         getTrades();
                     })
             }else{
-                setUserFeedbackAlert("Couldn't delete that trade, please try later");
+                response.json()
+                    .then(json => {
+                        setUserFeedbackAlert(json.error);
+                })
             }
         })
         .catch(_ => {console.error(_)});
@@ -273,25 +276,30 @@ function removeTrade(callingElem, tradeId){
  */
 function showTrades(trades){
     let template = document.getElementById("template_trade");
-    let cont = template.parentNode;
+    let cont = template.parentNode; // id="container_trades"
 
     // clean before inserting
     cont.innerHTML = "";
     cont.appendChild(template);
 
     let N=0; // number of the trade to display
-    for(let trade of trades){   
+    for(let trade of trades){
         ++N;
         let clone = template.cloneNode(true);
         let deleteTradeBtn = clone.getElementsByClassName("delete-trade-btn")[0];
 
-        let titleButton = clone.getElementsByTagName("button")[0];
+        let titleButton = clone.getElementsByTagName("button")[0]; // class="accordion-button"
         // let body = clone.getElementsByClassName("accordion-body")[0];
         let tradeBody = clone.getElementsByClassName("trade-body")[0];
         let id = trade._id;
 
         // display the data of the trade
-        titleButton.innerHTML = N;
+        if(trade.matched){
+            titleButton.innerHTML = `<span class="text-white"><b>Trade #${N}: </b> MATCHED</span>`;
+        }else{
+            titleButton.innerHTML = `<span class="text-warning"><b>Trade #${N}: </b> WAITING TO BE MATCHED</span>`;
+        }
+        
         tradeBody.innerHTML = "";
         tradeBody.innerHTML += "<b>YOU offered:</b><br>";
         for(let o of trade.offers_names)
@@ -306,7 +314,11 @@ function showTrades(trades){
         titleButton.attributes.getNamedItem("aria-controls").value = `${id}`;
 
         // fix the delete trade button
-        deleteTradeBtn.setAttribute("onclick", `removeTrade(this, "${id}");`);
+        if(trade.matched){
+            deleteTradeBtn.parentNode.remove();
+        }else{
+            deleteTradeBtn.setAttribute("onclick", `removeTrade(this, "${id}");`);
+        }
 
         clone.classList.remove("d-none");
 
