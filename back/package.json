@@ -7,7 +7,7 @@
     "dev": "node swagger.js -i 'swagger-output.json' ; cd .. ; nodemon back/index.js",
     "inspect": "node swagger.js -i 'swagger-output.json' ; cd .. ; nodemon --inspect back/index.js",
     "inspect-brk": "node swagger.js -i 'swagger-output.json' ; cd .. ; nodemon --inspect-brk back/index.js",
-    "bsync": "cd ../front ; browser-sync start -c ../back/bsync.json -w --files '*.html' --files 'js/*.js' --files 'shared/lib.js' --files 'js/navbar.js' --files 'css/*.css'",
+    "bsync": "cd ../front ; browser-sync start -c ../back/bsync.json -w --files '*.html' --files 'js/*.js' --files 'shared/lib.js' --files 'js/navbar.js' --files 'css/*.css' --files 'views/*.ejs'",
     "jsdoc": "cd .. ; find . -name '*.js' -not -path '*node_modules*' -not -path '*docs*'| paste -s -d' ' | xargs ./back/node_modules/.bin/jsdoc -r -d docs"
   },
   "author": "Gabriele Donato",

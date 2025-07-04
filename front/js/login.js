@@ -78,7 +78,7 @@ function logout(){
     sellState.clear();
     window.location.href = "login.html";
 
-    let optionsDELETE = optionsGET;
+    let optionsDELETE = structuredClone(optionsGET);
     optionsDELETE.method = 'DELETE';
     fetch(`${url_backend}/account/logout`, optionsDELETE)
         .then(response => {

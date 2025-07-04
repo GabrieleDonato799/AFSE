@@ -58,9 +58,6 @@ function addWanted(){
  * Updates the clear button depending on the presence or less of cards
  */
 function updateClearBtn(){
-    console.log(exchangeState);
-    console.log(exchangeState.isEmpty());
-
     if(exchangeState.isEmpty())
         clearBtn.setAttribute('disabled', '');
     else
@@ -246,6 +243,31 @@ function getTrades(){
 }
 
 /**
+ * Removes a trade
+ */
+function removeTrade(callingElem, tradeId){
+    let optionsDELETE = structuredClone(optionsGET);
+    optionsDELETE.method = "DELETE";
+ 
+    console.log(tradeId);
+
+    fetch(`${url_backend}/exchange/trade/${tradeId}`, optionsDELETE)
+        .then(response => {
+            if(response.ok){
+                response.json()
+                    .then(json => {
+                        console.log(json);
+                        appendUserFeedbackAlert(json.error);
+                        getTrades();
+                    })
+            }else{
+                setUserFeedbackAlert("Couldn't delete that trade, please try later");
+            }
+        })
+        .catch(_ => {console.error(_)});
+}
+
+/**
  * Takes the array of users traders and shows them to the page layout.
  * @param {Array} trades 
  */
@@ -261,25 +283,30 @@ function showTrades(trades){
     for(let trade of trades){   
         ++N;
         let clone = template.cloneNode(true);
+        let deleteTradeBtn = clone.getElementsByClassName("delete-trade-btn")[0];
 
         let titleButton = clone.getElementsByTagName("button")[0];
-        let body = clone.getElementsByClassName("accordion-body")[0];
+        // let body = clone.getElementsByClassName("accordion-body")[0];
+        let tradeBody = clone.getElementsByClassName("trade-body")[0];
         let id = trade._id;
 
         // display the data of the trade
         titleButton.innerHTML = N;
-        body.innerHTML = "";
-        body.innerHTML += "<b>YOU offered:</b><br>";
+        tradeBody.innerHTML = "";
+        tradeBody.innerHTML += "<b>YOU offered:</b><br>";
         for(let o of trade.offers_names)
-            body.innerHTML += o+"<br>";
-        body.innerHTML += "<b>YOU wanted:</b><br>";
+            tradeBody.innerHTML += o+"<br>";
+        tradeBody.innerHTML += "<b>YOU wanted:</b><br>";
         for(let w of trade.wants_names)
-            body.innerHTML += w+"<br>";
+            tradeBody.innerHTML += w+"<br>";
 
         // fix the accordion's collapse id
         clone.getElementsByClassName("accordion-collapse")[0].id = `${id}`;
         titleButton.attributes.getNamedItem("data-bs-target").value = `#${id}`;
         titleButton.attributes.getNamedItem("aria-controls").value = `${id}`;
+
+        // fix the delete trade button
+        deleteTradeBtn.setAttribute("onclick", `removeTrade(this, "${id}");`);
 
         clone.classList.remove("d-none");
 

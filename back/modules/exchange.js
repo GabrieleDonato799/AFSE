@@ -32,22 +32,42 @@ async function createTrade(req, res){
             const collAlbums = client.db(DB_NAME).collection('albums');
             const collTrades = client.db(DB_NAME).collection('trades');
 
-            let possessedCards = await collAlbums.find(
-                { user_id: offerer_objid },
-                { supercards: { $all: [...offers] } }
-            ).toArray();
-            possessedCards = possessedCards[0].supercards;
-            console.log();
+            // NOTE: the user can't offer the same card twice because it is removed from his album when a trade is created
 
-            for(let o of offers){
-                if(!possessedCards.includes(o)){
-                    throw new Error("The user doesn't have the cards xe is trying to exchange.");
+            // "find all the album of the user if xe has all the cards he is offering"
+            // this checks if the user has the cards he claims to have
+            let possessedCards = await collAlbums.findOne(
+                {
+                    $and: [
+                        { user_id: offerer_objid },
+                        { supercards: { $all: [...offers] } }
+                    ]
                 }
+            );
+            
+            if(possessedCards == null){
+                throw new Error("The user doesn't have the cards xe is trying to exchange.");
             }
+            
+            // check if the user has the cards he asks for
+            possessedCards = possessedCards.supercards;
             for(let w of wants){
                 if(possessedCards.includes(w)){
-                    throw new Error("The user can't exchange cards xe owns.");
+                    throw new Error("The user can't ask for cards xe owns.");
                 }
+            }
+            
+            // check if the user doesn't want a card he already asked for
+            let activeTrades = await collTrades.find(
+                {
+                    $and: [
+                        { offerer: offerer_objid },
+                        { wants: { $in: wants } }
+                    ]
+                }
+            ).toArray();
+            if(activeTrades.length > 0){
+                throw new Error("The user can't ask for a card xe already asked for, blocked in an active trade.");
             }
             await collAlbums.updateOne(
                 { user_id: offerer_objid },
@@ -68,11 +88,74 @@ async function createTrade(req, res){
     }
     catch(e){
         console.log(e);
-        res.status(500).json({error: `${e}`});
+        res.status(400).json({error: `${e.message}`});
     }
     finally {
         await session.endSession();
     }
+
+    return res;
+}
+
+/**
+ * Takes a request with the trade id in the querystring and tries to delete that trade.
+ * A trade can only be deleted from the user that created it.
+ * Returns JSON formatted errors in the response.
+ * @param {*} req 
+ * @param {*} res 
+ * @returns 
+ */
+async function deleteTrade(req, res){
+    const tradeId = ObjectId.createFromHexString(req.params.id);
+    const userId = ObjectId.createFromHexString(req.uid);
+    console.log(tradeId);
+
+    const session = client.startSession();
+    const transactionOptions = {
+        writeConcern: { w: 'majority' },
+    };
+
+    try {
+        await session.withTransaction(async () => {
+            const collTrades = client.db(DB_NAME).collection('trades');
+            const collAlbums = client.db(DB_NAME).collection('albums');
+
+            // get the affected offered cards
+            let trade = await collTrades.findOne(
+                { $and: [
+                    { offerer: userId },
+                    { _id: tradeId }
+                ] }
+            );
+
+            // give the offered cards back to the user
+            let updateStatus = await collAlbums.updateOne(
+                { user_id: userId },
+                { $addToSet: { supercards: { $each : trade.offers } } }
+            );
+
+            let deleteStatus = await collTrades.deleteOne(
+                { $and: [
+                    { offerer: userId },
+                    { _id: tradeId }
+                ] }
+            );
+            
+            if(deleteStatus.deletedCount === 0 || updateStatus.modifiedCount === 0){
+                res.status(500).json({error: "Could not delete the trade"});
+                throw Error(`Invalid transaction status: #deleted: ${deleteStatus.deletedCount}, #modified: ${updateStatus.modifiedCount}`);
+            }
+        }, transactionOptions);
+    }
+    catch(e){
+        console.log(e);
+    }
+    finally{
+        await session.endSession();
+    }
+
+    if(!res.headersSent)
+        res.json({error: `Successfully deleted the trade`});
 
     return res;
 }
@@ -160,6 +243,12 @@ async function matchTrade(t1){
 // exchange route
 app.post("/exchange/trade", (req, res) => {
     createTrade(req, res);
+});
+
+app.delete("/exchange/trade/:id", (req, res) => {
+    if(req.body === undefined)
+        res.status(404).json({ error: "Missing request' body"})
+    deleteTrade(req, res);
 });
 
 app.get("/exchange/trades", (req, res) => {
