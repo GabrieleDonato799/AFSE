@@ -8,6 +8,7 @@ var user_id = localStorage.getItem("user_id");
 var userAlbum = undefined;
 var card = document.getElementById('supercard');
 let clearBtn = document.getElementById('clearBtn');
+let exchangeBtn = document.getElementById('exchangeBtn');
 
 if(user_id === undefined) throw new Error("Unauthorized");
 
@@ -55,13 +56,11 @@ function addWanted(){
 }
 
 /**
- * Updates the clear button depending on the presence or less of cards
+ * Updates the "exchange" and "clear" buttons depending on the presence or less of cards
  */
-function updateClearBtn(){
-    if(exchangeState.isEmpty())
-        clearBtn.setAttribute('disabled', '');
-    else
-        clearBtn.removeAttribute('disabled');
+function updateTradeBtns(){
+    exchangeState.isEmpty() ? clearBtn.setAttribute('disabled', '') : clearBtn.removeAttribute('disabled');
+    exchangeState.isComplete() ? exchangeBtn.removeAttribute('disabled') : exchangeBtn.setAttribute('disabled', '');
 }
 
 /**
@@ -135,7 +134,7 @@ function showState(){
     showSelectedCards(exchangeState.offered, "offered");
     showSelectedCards(exchangeState.wanted, "wanted");
     hideAddingCards();
-    updateClearBtn();
+    updateTradeBtns();
 }
 
 /**
@@ -197,7 +196,7 @@ function remove(callingElem){
     exchangeState.remove(operation, hero_id);
 
     hideAddingCards();
-    updateClearBtn();
+    updateTradeBtns();
 }
 
 /**
