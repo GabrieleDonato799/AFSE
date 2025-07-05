@@ -8,6 +8,7 @@
 const url_backend = "http://localhost:3005"
 const MAX_SELECTED_CARDS_EXCHANGE_PER_OP = 4;
 const MAX_SELECTED_CARDS_TO_SELL = 8;
+const MAX_BALANCE = 99999
 const optionsGET = {
     credentials: 'include',
     method: 'GET',

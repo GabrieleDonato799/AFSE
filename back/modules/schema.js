@@ -43,7 +43,7 @@ function createCollections(){
                         balance: {
                             bsonType: "int",
                             minimum: 0,
-                            maximum: 99999,
+                            maximum: process.env.MAX_BALANCE,
                             description: "'balance' must be an integer in [ 0, infinity ] and is required"
                         },
                         album_id: {

@@ -111,7 +111,7 @@ function updatePageBtns(page){
     }
 
     // Disable the sell buttons if no cards are selected
-    if(sellState.isEmpty()){
+    if(sellState.isEmpty() || coinsBalance >= MAX_BALANCE){
         sellBtns.forEach(btn => {
             btn.setAttribute("disabled", "");
         });
@@ -276,11 +276,15 @@ function selectId(callingElem, sid){
         }
         else{
             // add it
-            if(size < MAX_SELECTED_CARDS_TO_SELL){
-                sellState.add(sid);
-            }else{
+            if(size >= MAX_SELECTED_CARDS_TO_SELL){
                 // Error
                 setUserFeedbackAlert(`You can't select more than ${MAX_SELECTED_CARDS_TO_SELL} cards to sell.`);
+            }
+            else if(coinsBalance >= MAX_BALANCE && op !== "wanted"){
+                setUserFeedbackAlert(`You reach the coins threshold of ${MAX_BALANCE}, you can't sell anymore.`);
+            }
+            else{
+                sellState.add(sid);
             }
         }
     }

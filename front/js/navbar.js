@@ -6,6 +6,7 @@
 var navbar = document.getElementById("navbar");
 var userFeedbackAlert = document.getElementById("userFeedbackAlert");
 var coinsCounter = document.getElementById("coins-counter");
+var coinsBalance = 0; // Used to enforce limits by the client
 
 let navLinks = navbar.getElementsByClassName("nav-link");
 let current = window.location.href;
@@ -79,6 +80,7 @@ async function getUserBalance(){
  * @param {number} balance
  */
 function updateCoinsCounter(counterE, balance){
+    coinsBalance = balance;
     counterE.innerHTML = `<strong>${balance} coins</strong>`;
     counterE.parentElement.classList.remove('d-none');
 }
