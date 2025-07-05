@@ -33,7 +33,7 @@ async function getUserData(){
                 console.log("Couldn't fetch the user's data");
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 /**
@@ -50,16 +50,16 @@ async function commonFetch(url, options){
         if(response.ok){
             response.json().then(json => {
                 setAlertMessage(statusAlert, `${json.error}`, "alert-success");
-            }).catch(_ => console.log(_));
+            }).catch(_ => console.error(_));
             res = true;
         }
         else{
-            let error = await response.json().catch(_ => console.error(_));;
+            const error = await response.json().catch(_ => console.error(_));;
             throw new Error(`${error.error}`);
         }
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         setAlertMessage(statusAlert, `Something went wrong, please retry later<br>${e.message}`, "alert-danger");
         res = false;
     }

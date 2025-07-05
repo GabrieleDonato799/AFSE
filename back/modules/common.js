@@ -25,7 +25,7 @@ const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
 
 const app = express();
 
-var client = new MongoClient(mAtlasURI);
+let client = new MongoClient(mAtlasURI);
 
 /**
  * Takes a string and returns a salted hash

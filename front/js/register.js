@@ -88,5 +88,6 @@ function register() {
         }).catch(err => {
             alert.innerHTML = `Something went wrong, please retry later`;
             alert.classList.remove("d-none");
+			console.log(err);
         });
 }

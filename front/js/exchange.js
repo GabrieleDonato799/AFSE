@@ -26,7 +26,7 @@ async function getUserAlbum(){
                     .catch(_ => console.error(_));
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 /**
@@ -102,7 +102,7 @@ function exchange(){
                     })
                     .catch(_ => console.error(_));
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 /**
@@ -178,7 +178,7 @@ function showSelectedCards(cards, op){
                         .catch(_ => console.error(_));
                 }
             })
-            .catch(_ => console.log(_));
+            .catch(_ => console.error(_));
     }
 }
 
@@ -239,7 +239,7 @@ function getTrades(){
                     })
                     .catch(_ => console.error(_));
             }
-        }).catch(_ => console.log(_));
+        }).catch(_ => console.error(_));
 }
 
 /**

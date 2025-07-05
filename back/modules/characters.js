@@ -24,7 +24,7 @@ async function getCharacterContent(contentType, cid, res){
                     res.json({results: []});
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 // Takes the character id and the server response, directly returns the character data or an error in the response.
@@ -46,7 +46,7 @@ async function returnCharacterById(cid, res){
         res.json(hero);
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         res.status(500);
         res.json({Error: "Error retrieving the character"});
     }
@@ -91,7 +91,7 @@ function checkCid(cid, res){
     try{
         cid = Number.parseInt(cid);
     }catch(e){
-        console.log(e);
+        console.error(e);
         res.status(400);
         res.json({error: "cid is not a number"});
         return -1;
@@ -110,28 +110,28 @@ app.get("/characters/names", (req, res) => {
 });
 
 app.get("/characters/:cid", (req, res) => {
-    var cid = req.params.cid;
+    let cid = req.params.cid;
     if((cid = checkCid(cid, res)) === -1) return;
 
     returnCharacterById(cid, res);
 });
 
 app.get("/characters/:cid/comics", (req, res) => {
-    var cid = req.params.cid;
+    let cid = req.params.cid;
     if((cid = checkCid(cid, res)) === -1) return;
 
     getCharacterContent("comics", cid, res);
 });
 
 app.get("/characters/:cid/series", (req, res) => {
-    var cid = req.params.cid;
+    let cid = req.params.cid;
     if((cid = checkCid(cid, res)) === -1) return;
 
     getCharacterContent("series", cid, res);
 });
 
 app.get("/characters/:cid/events", (req, res) => {
-    var cid = req.params.cid;
+    let cid = req.params.cid;
     if((cid = checkCid(cid, res)) === -1) return;
 
     getCharacterContent("events", cid, res);

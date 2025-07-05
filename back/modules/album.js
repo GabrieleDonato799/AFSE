@@ -96,7 +96,7 @@ async function sellUserCard(res, uid, cids){
         res.json({ error: "Success", balance: user.balance });
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         res.status(500).json({error: "Failed to update the user's album and balance"});
     }
     finally {

@@ -170,7 +170,7 @@ async function getUserAlbum(action){
                 })
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 /**
@@ -300,7 +300,7 @@ function sell(){
                         }
                         catch(e){
                             // this fails when we want to sell a card which is not in the current page
-                            console.log(e);
+                            console.error(e);
                         }
                     });
                     sellState.clear();

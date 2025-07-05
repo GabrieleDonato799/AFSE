@@ -6,7 +6,7 @@ const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
 
 async function getOffers(res){
-    var offers = [];
+    let offers = [];
 
     try{
         let response = client.db(DB_NAME).collection("offers").find();
@@ -16,7 +16,7 @@ async function getOffers(res){
         }
         res.json({offers});
     }catch(e){
-        console.log(e);
+        console.error(e);
     }
 }
 
@@ -45,7 +45,7 @@ async function buyOffer(req, res, uid){
 
         res.json({error: "success"});
     }catch(e){
-        console.log(e);
+        console.error(e);
     }
 }
 

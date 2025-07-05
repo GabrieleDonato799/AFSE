@@ -88,5 +88,5 @@ function logout(){
             if(!response.ok)
                 setUserFeedbackAlert('Error during logout, try later or manually delete the cookies otherwiser you won\'t be signed out!.');
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }

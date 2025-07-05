@@ -23,7 +23,7 @@ async function getUser(id) {
         // await client.connect();
         user = await client.db(DB_NAME).collection("users").findOne({ _id: ObjectId.createFromHexString(id)});
     }catch(e){
-        console.log(e);
+        console.error(e);
         console.log("MongoDB overloaded?");
     }finally{
         // await client.close();
@@ -72,7 +72,7 @@ async function deleteUser(res, uid, email, pwd){
             }, transactionOptions);
         }
         catch(e){
-            console.log(e);
+            console.error(e);
             res.status(500).json({error: "Failed to delete the user's account"});
         }
         finally {
@@ -93,7 +93,7 @@ async function deleteUser(res, uid, email, pwd){
  * @returns {string|null} 
  */
 async function getUserId(email, pwd){
-    var uid = null;
+    let uid = null;
 
     try{
         // Search up a user with the only email (internal identificator of the user)
@@ -105,7 +105,7 @@ async function getUserId(email, pwd){
         uid = user._id.toHexString();
     }
     catch(e){
-        console.log(e);
+        console.error(e);
     }
     finally{
         return uid;
@@ -190,7 +190,6 @@ async function addUser(res, user) {
                 throw error;
             }
         })
-        .catch(_ => console.log(_));
 
         // Inserisce il nuovo utente nel database
         const insertedUser = await client.db(DB_NAME).collection("users").insertOne(user);
@@ -201,7 +200,7 @@ async function addUser(res, user) {
         res.cookie('session_token', tok, opts);
         res.status(201).json({"_id":user._id});
     } catch (e) {
-        console.log(e);
+        console.error(e);
         if (e.code === 11000) {
             res.status(400).json({ error: "E-mail already in use" });
         } else {
@@ -255,8 +254,8 @@ async function loginUser(res, email, password) {
     try{
         // Cerca un utente con l'email e la password specificate
         // TODO: to speedup the login return the entire user
-        var uid = await getUserId(email, password);
-        var user = await getUser(uid);
+        let uid = await getUserId(email, password);
+        let user = await getUser(uid);
         console.log(user);
         if (uid) {
             const {tok, opts} = genJWS(uid, admin=false);
@@ -267,7 +266,7 @@ async function loginUser(res, email, password) {
         }
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         res.status(404).json({ error: "Error connecting to the database" });
     }
 }
@@ -287,7 +286,7 @@ async function clearCookies(res){
  * @param {string} newfavhero
  */
 async function updateFavHero(res, uid, newfavhero) {
-    var user = undefined;
+    let user = undefined;
 
     // update the favorite hero
     try {
@@ -306,7 +305,7 @@ async function updateFavHero(res, uid, newfavhero) {
             return;
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
         res.status(404).json({ error: "Could not update the favorite hero" });
         return;
     }
@@ -325,7 +324,7 @@ async function updateFavHero(res, uid, newfavhero) {
  * @param {string} newnick
  */
 async function updateUserNick(res, uid, newnick) {
-    var user = undefined;
+    let user = undefined;
     // check if the new nickname respects the requirements
     if(!checkNick(res, newnick)) return;
     // check if the nickname is already in use
@@ -335,7 +334,7 @@ async function updateUserNick(res, uid, newnick) {
         )
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         res.status(404).json({ error: "Database error occured during nickname update" });
         return;
     }
@@ -362,7 +361,7 @@ async function updateUserNick(res, uid, newnick) {
             return;
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
         res.status(404).json({ error: "Could not update the nickname" });
         return;
     }
@@ -402,7 +401,7 @@ async function updateUserEmail(res, uid, oldemail, newemail){
             return;
         }
     } catch (e) {
-        console.log(e);
+        console.error(e);
         res.status(404).json({ error: "Could not update the email" });
         return;
     }
@@ -423,7 +422,7 @@ async function updateUserEmail(res, uid, oldemail, newemail){
  * @param {string} newpwd
  */
 async function updateUserPwd(res, uid, email, oldpwd, newpwd) {
-    var user = undefined;
+    let user = undefined;
     // check if the new password respects the requirements
     if(!checkPwd(res, newpwd, email)) return;
 
@@ -451,7 +450,7 @@ async function updateUserPwd(res, uid, email, oldpwd, newpwd) {
                 return;
             }
         } catch (e) {
-            console.log(e);
+            console.error(e);
             res.status(404).json({ error: "Could not update the password" });
             return;
         }

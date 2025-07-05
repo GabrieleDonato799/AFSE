@@ -3,7 +3,7 @@
  */
 
 const { app, client, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET } = require('./common.js');
-var { marvelCache } = require('./rarity.js');
+const { marvelCache } = require('./rarity.js');
 const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
 
@@ -88,7 +88,7 @@ async function generatePacket(res, uid){
         }, transactionOptions);
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         if(!res.headersSent)
             res.status(500).json({error: "Failed to update the user's album and balance"});
     }

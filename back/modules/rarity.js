@@ -2,11 +2,9 @@
  * @module back/rarity
  */
 
-const { app } = require('./common.js');
 const lib = require('../../front/shared/lib.js')
 const api_marvel = require('./api_marvel.js');
 const fs = require('fs');
-const { error } = require('console');
 const { exit } = require('process');
 
 /**
@@ -15,7 +13,7 @@ const { exit } = require('process');
  * @field {Object} data
  * @field {boolean} ready
  */
-var marvelCache = {
+let marvelCache = {
     characters: undefined,
     series: undefined,
     comics: undefined,
@@ -26,7 +24,7 @@ var marvelCache = {
 /**
  * A memoized function to retrieve the marvel characters redefined by getMarvelCharacters() every time it recalculates the character list.
  */
-var getMarvelCharacterById = lib.memoize(function (id) {
+let getMarvelCharacterById = lib.memoize(function (id) {
     for(let c of marvelCache.characters){
         if(c.id === id){
            return c;
@@ -85,7 +83,7 @@ async function getMarvelCharacters(){
         console.info(`There are ${characters.length} USABLE characters in the API`);
         return characters;
     })
-    .catch(_ => console.log(_));
+    .catch(_ => console.error(_));
 }
 
 /**
@@ -253,7 +251,7 @@ async function tryFetchMarvelCharacters(){
             }
         });
     })
-    .catch(_ => console.log(_));
+    .catch(_ => console.error(_));
 }
 
 module.exports = {

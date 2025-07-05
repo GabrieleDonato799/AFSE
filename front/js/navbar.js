@@ -64,13 +64,13 @@ async function getUserBalance(){
                 response.json().then(json => {
                     updateCoinsCounter(coinsCounter, json.balance);
                 })
-                .catch(_ => console.log(_));
+                .catch(_ => console.error(_));
             }
             else{
                 updateCoinsCounter(coinsCounter, 0);
                 console.log("Couldn't fetch the user's balance");
             }
-        }).catch(_ => console.log(_));
+        }).catch(_ => console.error(_));
 }
 
 /**

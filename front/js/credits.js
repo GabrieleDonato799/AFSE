@@ -48,7 +48,7 @@ async function getOffers(){
                 })
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 /**
@@ -86,7 +86,7 @@ function buyCoins(callingElem){
                 })
             }
         })
-        .catch(_ => console.log(_));
+        .catch(_ => console.error(_));
 }
 
 getOffers();

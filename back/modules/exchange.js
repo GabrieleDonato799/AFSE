@@ -87,7 +87,7 @@ async function createTrade(req, res){
         }
     }
     catch(e){
-        console.log(e);
+        console.error(e);
         res.status(400).json({error: `${e.message}`});
     }
     finally {
@@ -148,7 +148,7 @@ async function deleteTrade(req, res){
         }, transactionOptions);
     }
     catch(e){
-        console.log(e);
+        console.error(e);
     }
     finally{
         await session.endSession();
@@ -188,7 +188,7 @@ async function getTrades(req, res, uid){
 
         res.json(trades);
     }catch(e){
-        console.log(e);
+        console.error(e);
     }
 }
 

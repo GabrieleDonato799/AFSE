@@ -18,5 +18,5 @@ function openPacket(){
                 }
                 console.log(json);
             })
-        }).catch(_ => console.log(_));
+        }).catch(_ => console.error(_));
 }

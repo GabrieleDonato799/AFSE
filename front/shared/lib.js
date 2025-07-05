@@ -704,12 +704,14 @@ if(globalThis.window !== undefined){
                     });
                 })
             }else{
-                response.json().then(error => {
+                response.json().then(err => {
                     setUserFeedbackAlert("Couldn't fetch the superheroes names. Please note you can select your favorite superhero later in the settings.");
+					console.error(err)
                 })
             }
         }).catch(err => {
             setUserFeedbackAlert("Something went wrong, please retry later");
+			console.error(err);
         });
     }
 }
