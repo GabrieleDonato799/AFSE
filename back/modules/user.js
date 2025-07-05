@@ -26,32 +26,53 @@ async function getUser(id) {
 }
 
 /**
- * Deletes a user.
- * Takes the server the user id and sets the server response.
+ * Atomically deletes a user, its album and currently unmatched trades.
+ * Takes the user id, its email and password to authenticate the transaction and sets the server response.
  * Does not return anything.
  * @param {*} res
  * @param {string} uid
+ * @param {string} email
+ * @param {string} pwd
  */
-async function deleteUser(res, uid, email, pwd) {
+async function deleteUser(res, uid, email, pwd){
+    // authentication
     const uidMatch = await getUserId(email, pwd);
 
     if(uid !== uidMatch){
         res.status(401).json({ error: "Failed to authenticate the user action" });
     }
     else{
-        try{
-            const result = await client.db(DB_NAME).collection("users").deleteOne({ _id: ObjectId.createFromHexString(uid) });
-            if(result.deletedCount > 0){
-                res.json({ error: "Success" });
-            }
-            else{
-                res.status(500).json({ error: "The database did not delete the user's record" });
-            }
+        const session = client.startSession();
+        const transactionOptions = {
+            // A transaction with 'majority' concern will be acknowledged after most of the data holders are updated. https://www.mongodb.com/docs/manual/core/transactions/#transactions-and-write-concern
+            writeConcern: { w: 'majority' },
+            readConcern: { r: 'majority' }
+        };
+        const wantOrOffFilter = {$or: [
+            {wanter: ObjectId.createFromHexString(uid)},
+            {offerer: ObjectId.createFromHexString(uid)}
+        ]}
+        const user_id = ObjectId.createFromHexString(uid);
+
+        try {
+            await session.withTransaction(async () => {
+                const collAlbums = client.db(DB_NAME).collection('albums');
+                const collTrades = client.db(DB_NAME).collection('trades');
+                const collUsers = client.db(DB_NAME).collection('users');
+                await collAlbums.deleteOne({ user_id: user_id }, { session });
+                await collTrades.deleteMany(wantOrOffFilter, { session });
+                await collUsers.deleteOne({ _id: user_id }, { session });
+            }, transactionOptions);
         }
         catch(e){
             console.log(e);
-            res.json({ error: "Error connecting to the database" });
+            res.status(500).json({error: "Failed to delete the user's account"});
         }
+        finally {
+            await session.endSession();
+        }
+
+        res.json({error: "Successfully deleted the user's account"});
     }
 }
 
