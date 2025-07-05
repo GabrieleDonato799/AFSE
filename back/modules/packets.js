@@ -1,5 +1,5 @@
 const { app, client, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET } = require('./common.js');
-var { marvelCharacters } = require('./common.js');
+var { marvelCharacters } = require('./rarity.js');
 const crypto = require('crypto');
 const { ObjectId } = require('mongodb');
 
@@ -24,8 +24,8 @@ async function generatePacket(res, uid){
 
         // GENERATION
         for(let i=0; i<SUPERCARD_PACKET_SIZE; i++){
-            let id = crypto.randomInt(0, marvelCharacters.length);
-            packet.push(marvelCharacters[id].id);
+            let id = crypto.randomInt(0, marvelCharacters.data.length);
+            packet.push(marvelCharacters.data[id].id);
         }
         
         // UPDATE DOCUMENT IN A DIFFERENT COLLECTION
@@ -44,7 +44,6 @@ async function generatePacket(res, uid){
         res.json(packet);
     }catch(e){
         console.log(e);
-        console.log("MongoDB overloaded?");
     }
 }
 
@@ -52,14 +51,19 @@ async function generatePacket(res, uid){
 app.get("/packets/:uid", (req, res) =>{
     const uid = req.params.uid;
 
-    try{
-        ObjectId.createFromHexString(uid);
-    }catch(e){
-        console.log(e);
-        res.status(400);
-        res.json({error: "missing uid"});
-        return;
+    if(!marvelCharacters.ready){
+        res.json({error: "The server is still loading the required resources"});
     }
-    
-    generatePacket(res, uid);
+    else{
+        try{
+            ObjectId.createFromHexString(uid);
+        }catch(e){
+            console.log(e);
+            res.status(400);
+            res.json({error: "missing uid"});
+            return;
+        }
+        
+        generatePacket(res, uid);
+    }
 });

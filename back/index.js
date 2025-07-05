@@ -20,6 +20,7 @@ require('./modules/exchange.js');
 require('./modules/offers.js');
 require('./modules/packets.js');
 require('./modules/user.js');
+require('./modules/rarity.js');
 // require('./modules/.js');
 
 // start the server

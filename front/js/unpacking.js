@@ -7,9 +7,9 @@ function openPacket(){
         .then(response => {
             if(response.ok){
                 response.json().then(json => {
+                    getUserBalance();
                     console.log(json);
                 })
             }
         });
 }
-openPacket();
