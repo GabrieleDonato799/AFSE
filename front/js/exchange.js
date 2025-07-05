@@ -98,7 +98,7 @@ function exchange(){
                             console.log(json);
                             getTrades();	
                         }
-                        setUserFeedbackAlert(json.error);
+                        setUserFeedbackAlert(json.error, true, 5000, colorClass="alert-success");
                     })
                     .catch(_ => console.error(_));
         })
@@ -257,7 +257,7 @@ function removeTrade(callingElem, tradeId){
                 response.json()
                     .then(json => {
                         console.log(json);
-                        appendUserFeedbackAlert(json.error);
+                        appendUserFeedbackAlert(json.error, true, 5000, colorClass="alert-success");
                         getTrades();
                     })
             }else{

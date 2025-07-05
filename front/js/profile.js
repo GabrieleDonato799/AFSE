@@ -9,7 +9,6 @@ let formNick = document.getElementById("formNick");
 let formEmail = document.getElementById("formEmail");
 let formOldPwd = document.getElementById("formOldPwd");
 let formNewPwd = document.getElementById("formNewPwd");
-let statusAlert = document.getElementById("statusAlert");
 let user = null;
 
 if(user_id === undefined) throw new Error("Unauthorized");
@@ -50,7 +49,7 @@ async function commonFetch(url, options){
         const response = await fetch(url, options)
         if(response.ok){
             response.json().then(json => {
-                setAlertMessage(statusAlert, `${json.error}`, "alert-success");
+                setUserFeedbackAlert(`${json.error}`, true, 5000, colorClass="alert-success");
             }).catch(_ => console.error(_));
             res = true;
         }
@@ -61,7 +60,7 @@ async function commonFetch(url, options){
     }
     catch(e){
         console.error(e);
-        setAlertMessage(statusAlert, `Something went wrong, please retry later<br>${e.message}`, "alert-danger");
+        setUserFeedbackAlert(`Something went wrong, please retry later<br>${e.message}`, true, 5000, colorClass="alert-danger");
         res = false;
     }
     finally{
@@ -82,7 +81,6 @@ function changeNick() {
         })
     };
 
-    statusAlert.classList.add("d-none");
     commonFetch(`${url_backend}/account/changenick`, options);
 }
 
@@ -98,7 +96,6 @@ function changeFavHero() {
         })
     };
 
-    statusAlert.classList.add("d-none");
     commonFetch(`${url_backend}/account/changefavhero`, options);
 }
 
@@ -115,7 +112,6 @@ function changeEmail() {
         })
     };
 
-    statusAlert.classList.add("d-none");
     commonFetch(`${url_backend}/account/changeemail`, options)
 }
 
@@ -133,7 +129,6 @@ function changePwd() {
         })
     };
 
-    statusAlert.classList.add("d-none");
     commonFetch(`${url_backend}/account/changepwd`, options);
 }
 
@@ -153,33 +148,12 @@ async function deleteAccount() {
         })
     };
 
-    statusAlert.classList.add("d-none");
     let res = await commonFetch(`${url_backend}/account`, options);
     if(res){
         setTimeout(() => {
             window.location.href = `login.html?logout=y`;
         }, 1250);
     }
-}
-
-/**
- * Takes a Bootstrap 5 alert element, a message and a alert color as Bootstrap class and sets the alert accordingly.
- * Assumes that the only used colors are danger and success.
- * @param {Element} alertE
- * @param {string} message
- * @param {string} colorClass
- * @param {boolean} visible
- * @example
- * setAlertMessage(alertElement, "Hello, World!", "alert-success");
- */
-function setAlertMessage(alertE, message, colorClass, visible=true){
-    alertE.classList.remove('alert-danger');
-    alertE.classList.remove('alert-success');
-    alertE.classList.add(colorClass);
-    alertE.innerHTML = message;
-
-    if(visible) alertE.classList.remove("d-none");
-    else alertE.classList.add("d-none");
 }
 
 getUserData();

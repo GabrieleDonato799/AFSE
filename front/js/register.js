@@ -3,7 +3,6 @@
  */
 
 let form = document.getElementById("registerForm");
-let alert = document.getElementById("userFeedbackAlert");
 let submit = document.getElementById("registerSubmit");
 
 getSelectableCharactersName();
@@ -15,26 +14,26 @@ getSelectableCharactersName();
  */
 function checkDetails(){
     let correct = true;
-    alert.innerHTML = "";
+    setUserFeedbackAlert("", false, 0);
 
     if(!form.nick.value){
-        alert.innerHTML += "Missing nickname!<br>";
+        appendUserFeedbackAlert("Missing nickname!", false, 0, "alert-danger");
         correct = false;
     }
 
     if(form.email.value !== form.emailConfirm.value){
-        alert.innerHTML += "The emails don't match!<br>";
+        appendUserFeedbackAlert("The emails don't match!", false, 0, "alert-danger");
         correct = false;
     }
     if(form.password.value !== form.passwordConfirm.value){
-        alert.innerHTML += "The passwords don't match!<br>";
+        appendUserFeedbackAlert("The passwords don't match!", false, 0, "alert-danger");
         correct = false;
     }
 
     if(!correct){
-        alert.classList.remove("d-none");
-    }else{
-        alert.classList.add("d-none");
+        setVisibleUserFeedbackAlert(true);
+		setTimeoutUserFeedbackAlert(5000);
+        moveViewUserFeedbackAlert();
     }
 
     return correct;
@@ -70,10 +69,7 @@ function register() {
                     exchangeState.clear();
                     sellState.clear();
 
-                    alert.innerHTML = "Successfully registered!";
-                    alert.classList.add("alert-success");
-                    alert.classList.remove("alert-danger");
-                    alert.classList.remove("d-none");
+                    setUserFeedbackAlert("Successfully registered!", true, 5000, "alert-success");
                     
                     setTimeout(() => {
                         window.location.href = "album.html";
@@ -81,13 +77,11 @@ function register() {
                 })
             }else{
                 response.json().then(error => {
-                    alert.innerHTML = `${error.error}<br>`;
-                    alert.classList.remove("d-none");
+                    setUserFeedbackAlert(`${error.error}`, true, 5000, "alert-danger");
                 })
             }
         }).catch(err => {
-            alert.innerHTML = `Something went wrong, please retry later`;
-            alert.classList.remove("d-none");
+            setUserFeedbackAlert(`Something went wrong, please retry later`, true, 5000, "alert-danger");
 			console.log(err);
         });
 }

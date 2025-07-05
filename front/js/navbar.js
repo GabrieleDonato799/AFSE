@@ -96,38 +96,45 @@ async function setUsersNick(){
 }
 
 /**
- * Takes a message and whether to move the view to the alert. The message will override the one in the navbar' user alert.
+ * The message will override the one in the navbar' user alert.
  * @param {string} message
- * @param {bool} moveView
+ * @param {bool} moveView Whether to move the viewport to the alert, the alert is visible only if this is true 
  * @param {number} timeout The time after which the alert is hidden
+ * @param {string} colorClass A Bootstrap 5 color class
  */
-function setUserFeedbackAlert(message, moveView=true, timeout=5000){
+function setUserFeedbackAlert(message, moveView=true, timeout=5000, colorClass){
+    setUserFeedbackAlertColor(colorClass);
     userFeedbackAlert.innerHTML = message;
     if(moveView){
         setVisibleUserFeedbackAlert(true);
-        window.location.hash = '#notifyError';
+        moveViewUserFeedbackAlert();
     }
     if(timeout){
-        setTimeout(() => {
-            setVisibleUserFeedbackAlert(false);
-        }, timeout);
-    }
+		setTimeoutUserFeedbackAlert(timeout);
+	}
 }
 
 /**
  * Takes a message to be appended to the one in the navbar' user alert.
  * The message is place in a newline except if the alert is empty.
  * @param {string} message
- * @param {bool} moveView
+ * @param {bool} moveView Whether to move the viewport to the alert, the alert is visible only if this is true 
+ * @param {number} timeout The time after which the alert is hidden
+ * @param {string} colorClass A Bootstrap 5 color class
+
  */
-function appendUserFeedbackAlert(message, moveView=true){
+function appendUserFeedbackAlert(message, moveView=true, timeout, colorClass){
+    setUserFeedbackAlertColor(colorClass);
     if(userFeedbackAlert.innerHTML !== "")
         userFeedbackAlert.innerHTML += '<br>';
     userFeedbackAlert.innerHTML += message;
     if(moveView){
         setVisibleUserFeedbackAlert(true);
-        window.location.hash = '#userFeedbackAlert';
+        moveViewUserFeedbackAlert();
     }
+	if(timeout){
+		setTimeoutUserFeedbackAlert(timeout);
+	}
 }
 
 /**
@@ -136,4 +143,33 @@ function appendUserFeedbackAlert(message, moveView=true){
  */
 function setVisibleUserFeedbackAlert(bool){
     bool ? userFeedbackAlert.classList.remove('d-none') : userFeedbackAlert.classList.add('d-none');
+}
+
+function moveViewUserFeedbackAlert(){
+    window.location.hash = '#notifyError';
+}
+
+function setTimeoutUserFeedbackAlert(timeout=5000){
+    if(timeout){
+        setTimeout(() => {
+            setVisibleUserFeedbackAlert(false);
+        }, timeout);
+    }
+}
+
+/**
+ * Takes a Bootstrap 5 alert color class, removes all the others on the alert and applies the given class.
+ * @param {string} colorClass
+ */
+function setUserFeedbackAlertColor(colorClass="alert-danger"){
+    userFeedbackAlert.classList.remove('alert-primary');
+    userFeedbackAlert.classList.remove('alert-secondary');
+    userFeedbackAlert.classList.remove('alert-success');
+    userFeedbackAlert.classList.remove('alert-danger');
+    userFeedbackAlert.classList.remove('alert-warning');
+    userFeedbackAlert.classList.remove('alert-info');
+    userFeedbackAlert.classList.remove('alert-light');
+    userFeedbackAlert.classList.remove('alert-dark');
+
+    userFeedbackAlert.classList.add(colorClass);
 }

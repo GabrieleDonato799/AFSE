@@ -338,12 +338,14 @@ function sell(){
                 else{
                     console.error(json.error);
                     sellState.clear();
+                    setUserFeedbackAlert("An error has occured, please retry later", true, 5000, "alert-danger");
                 }
             });
         })
         .catch(_ => {
             console.error(_);
             sellState.clear();
+            setUserFeedbackAlert("An error has occured, please retry later", true, 5000, "alert-danger");
         });
 }
 
