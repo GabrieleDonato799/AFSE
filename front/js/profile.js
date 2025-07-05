@@ -54,7 +54,7 @@ async function commonFetch(url, options){
             res = true;
         }
         else{
-            let error = await response.json();
+            let error = await response.json().catch(_ => console.error(_));;
             throw new Error(`${error.error}`);
         }
     }

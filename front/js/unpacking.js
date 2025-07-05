@@ -8,12 +8,15 @@ if(user_id === undefined) throw new Error("Unauthorized");
 function openPacket(){
     fetch(`${url_backend}/packets`, optionsGET)
         .then(response => {
-            if(response.ok){
-                response.json().then(json => {
-                    if(!json.error)
-                        getUserBalance();
-                    console.log(json);
-                })
-            }
+            response.json().then(json => {
+                if(response.ok){
+                    setUserFeedbackAlert("Successfully purchased!");
+                    getUserBalance();
+                }
+                else{
+                    setUserFeedbackAlert(json.error);
+                }
+                console.log(json);
+            })
         }).catch(_ => console.log(_));
 }

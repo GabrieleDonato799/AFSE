@@ -4,7 +4,7 @@
 
 const { app, client, DB_NAME } = require('./common.js');
 const { getUser } = require('./user.js');
-const { marvelCharacters } = require('./rarity.js');
+const { marvelCache } = require('./rarity.js');
 const { ObjectId } = require('mongodb');
 
 /**
@@ -22,11 +22,11 @@ async function getUserAlbum(res, uid){
     if(albumData){
         albumData.collected = albumData.supercards.length;
         albumData.missing = [];
-        marvelCharacters.data.forEach(superhero => {
+        marvelCache.characters.forEach(superhero => {
             albumData.missing.push(superhero.id);
         });
         albumData.missing = [...((new Set(albumData.missing)).difference(new Set(albumData.supercards)))];
-        albumData.total = marvelCharacters.data.length;
+        albumData.total = marvelCache.characters.length;
         res.json(albumData);
     }
     else{

@@ -123,8 +123,8 @@ function checkPwd(res, pwd, email){
         res.status(400).json({ error: "The password is missing"});
         result = false;
     }
-    else if (pwd.length < 8) {
-        res.status(400).json({ error: "The password is too short or missing"});
+    else if (pwd.length < process.env.PASSWORD_MIN_LENGTH) {
+        res.status(400).json({ error: `The password is too short or missing, must be at least ${process.env.PASSWORD_MIN_LENGTH} characters long.`});
         result = false;
     }
     else if (pwd === email){

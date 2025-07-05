@@ -32,19 +32,6 @@ function memoize(fn) {
 }
 
 /**
- * Checks if the password conforms to the adopted format, returns true if it does, false otherwise.
- * It doesn't support passphrases.
- * @param {string} pwd 
- * @returns {boolean}
- */
-function checkPassword(pwd){
-    pwd = String(pwd);
-
-    if(pwd.length < 8) return false;
-    if(pwd.includes("")) return false;
-}
-
-/**
  * Takes a number and a precision, rounds up to 10*precision
  * @param {number} num The number to round
  * @param {number} precision
@@ -544,23 +531,32 @@ class Supercard {
      * @param {function} customs function that is executed to customized this initialization
      */
     constructor(superhero, container, supercard, operation=null) {
-        this.superhero = superhero;
         this.container = container;
         this.operation = operation;
 
         this.clone = supercard.cloneNode(true);
-        if(operation)
-            this.clone.id = `supercard-${operation}-${this.superhero.id}`;
-        else
-            this.clone.id = `supercard-${this.superhero.id}`;
-    
         this.title = this.clone.getElementsByClassName('card-title')[0];
         this.overview = this.clone.getElementsByClassName('card-text')[0];
         this.image = this.clone.getElementsByClassName('card-img-top')[0];
         this.button = this.clone.getElementsByClassName('btn-primary')[0];
         this.footer = this.clone.getElementsByClassName('card-footer')[0];
         this.rarityButton = this.clone.getElementsByClassName('rarity-button')[0];
-    
+
+        this.setSuperhero(superhero);
+    }
+
+    /**
+     * Takes a superhero's JSON and updates the card's properties
+     * @param {*} superhero 
+     */
+    setSuperhero(superhero){
+        this.superhero = superhero;
+
+        if(this.operation)
+            this.clone.id = `supercard-${this.operation}-${this.superhero.id}`;
+        else
+            this.clone.id = `supercard-${this.superhero.id}`;
+
         this.title.innerHTML = this.superhero.name;
         this.image.src = this.superhero['thumbnail'];
     
@@ -603,12 +599,32 @@ class Supercard {
         this.#show();
     }
 
+    exchangeWantedTweaks(){
+        this.deleteBtn = this.clone.getElementsByClassName('remove-button')[0];
+        this.detailsButton = this.footer.getElementsByClassName('details-button')[0];
+        
+        this.clone.classList.add('missing-card');
+        this.rarityButton.classList.add('d-none');
+        // move the delete button to the right
+        this.deleteBtn.parentNode.classList.remove("justify-content-between");
+        this.deleteBtn.parentNode.classList.add("justify-content-end");
+        this.deleteBtn.classList.remove('d-none');
+        this.detailsButton.classList.add('d-none');
+        this.image.src = 'img/missing-card.jpg';
+        this.#show();
+    }
+
     carddetailsTweaks(){
         // the description box must be after the supercard
         this.container.insertBefore(this.clone, this.container.firstChild);
         // albumTweaks
+        let rarityParent = this.rarityButton.parentNode;
+        rarityParent.classList.remove("justify-content-between");
+        rarityParent.classList.add("justify-content-end");
         this.detailsButton = this.footer.getElementsByClassName('details-button')[0];
-        this.detailsButton.search = `?cid=${this.superhero.id}`;
+        this.detailsButton.remove();
+        // this.detailsButton.search = `?cid=${this.superhero.id}`;
+
         // #show
         setClickSelectEvtListener(this.clone);
         this.clone.classList.remove('d-none');
@@ -634,7 +650,7 @@ if(globalThis.window !== undefined){
     // }
 
     /**
-     * Takes the element of a supercard and its superhero's id, determines the color based on if it is selected or not, rarity and makes it selectable by adding an click event listener.
+     * Takes the element of a supercard and its superhero's id, determines the color based on if it is selected or not
      */
     function adjustCardColor(card, id){
         if(exchangeState.contains(id, "wanted"))
@@ -706,7 +722,6 @@ if(globalThis.window !== undefined){
     exports.optionsGET = optionsGET;
 
     exports.memoize = memoize;
-    exports.checkPassword = checkPassword;
     exports.roundUp = roundUp;
     exports.binarySearchRight = binarySearchRight;
     exports.SellState = SellState;

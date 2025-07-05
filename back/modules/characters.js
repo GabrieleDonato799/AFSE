@@ -4,19 +4,24 @@
 
 const { app } = require('./common.js');
 const api_marvel = require('./api_marvel.js');
-const { getMarvelCharacterById, marvelCharacters } = require('./rarity.js');
+const { getMarvelCharacterById, marvelCache } = require('./rarity.js');
 
 async function getCharacterContent(contentType, cid, res){
     // console.log(`[getCharacterContent] contentType: ${contentType}, cid: ${cid}`);
     // retrieve the data from Marvel
     await api_marvel.getFromMarvel(`public/characters/${cid}/${contentType}`, "")
         .then(response => {
-            if(response.code === 200){
+            if(response !== undefined && response.code === 200){
                 res.json(response.data);
             }
             else{
-                res.status(500);
-                res.json({error: "error during data retrieval"});
+                // search it in the cached resources
+                let data = marvelCache[`${contentType}`].filter(hero =>{return hero.id===cid})[0];
+                
+                if(data['data'] !== undefined)
+                    res.json(data['data']);
+                else
+                    res.json({results: []});
             }
         })
         .catch(_ => console.log(_));
@@ -29,8 +34,10 @@ async function returnCharacterById(cid, res){
     if(!hero){
         // try to fall back to the cached json file
         hero = getMarvelCharacterById(cid);
-        if(!hero)
+        if(!hero){
             res.json({error: "Error retrieving the character"});
+            return;
+        }
     }
 
     try{
@@ -50,7 +57,10 @@ async function getCharacterById(cid) {
     let response = await api_marvel.getFromMarvel(`public/characters/${cid}`,``);
     let hero = undefined;
 
-    if(response.code === "RequestThrottled"){ // Rate limited
+    if(response === undefined){
+        console.error(`[getCharacterById] API is down`);
+    }
+    else if(response.code === "RequestThrottled"){ // Rate limited
         console.error(`[getCharacterById] 429 ${response.message}`);
     }
     else{
@@ -93,7 +103,7 @@ function checkCid(cid, res){
 // characters routes
 app.get("/characters/names", (req, res) => {
     let data = [];
-    marvelCharacters.data.forEach(hero => {
+    marvelCache.characters.forEach(hero => {
         data.push(hero.name);
     });
     res.json(JSON.stringify(data));

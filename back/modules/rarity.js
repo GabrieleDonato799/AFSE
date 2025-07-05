@@ -11,20 +11,23 @@ const { exit } = require('process');
 
 /**
  * It contains all the data extracted from the Marvel API, without the characters with a missing thumbnail and with the precalculated rarity.
- * Data is loaded asynchronously and once it's ready the ready field will be set to true.
+ * Data is loaded asynchronously and once it's ready the corresponding ready field will be set to true.
  * @field {Object} data
  * @field {boolean} ready
  */
-var marvelCharacters = {
-    data: undefined,
-    ready: false,
+var marvelCache = {
+    characters: undefined,
+    series: undefined,
+    comics: undefined,
+    events: undefined,
+    ready_characters: false // it is supposed that the characters are loaded last
 };
 
 /**
  * A memoized function to retrieve the marvel characters redefined by getMarvelCharacters() every time it recalculates the character list.
  */
 var getMarvelCharacterById = lib.memoize(function (id) {
-    for(let c of marvelCharacters.data){
+    for(let c of marvelCache.characters){
         if(c.id === id){
            return c;
         }
@@ -39,7 +42,7 @@ var getMarvelCharacterById = lib.memoize(function (id) {
 async function getMarvelCharacters(){
     let characters = [];
 
-    // fetch the amount charactes to know how many requests to make
+    // fetch the amount of characters to know how many requests to make
     let resCount = await api_marvel.getFromMarvel(`public/characters`)
             .catch(err => {console.error("[Error fetching the character count]", err)});
     let rawCharsCount = lib.roundUp(resCount.data.total, 2);
@@ -147,20 +150,70 @@ function determineRarityColors(rarities){
     return rarityColors;
 }
 
+// series, comics and events
+const seriesCachePath = '/tmp/series.json';
+const comicsCachePath = '/tmp/comics.json';
+const eventsCachePath = '/tmp/events.json';
+fs.readFile(seriesCachePath, (err, data) => {
+    if(err){
+        console.error(`[Couldn't read the series cache file ${seriesCachePath}]`, err);
+    }
+    else{
+        try{
+            marvelCache.series = JSON.parse(data.toString());
+            // marvelCache.ready = true;
+            console.log(`Marvel series read from cache file ${seriesCachePath}`);
+        }
+        catch(e){
+            console.error(`[Couldn't parse the cached series data in ${seriesCachePath}, won't use]`);
+        }
+    }
+});
+fs.readFile(comicsCachePath, (err, data) => {
+    if(err){
+        console.error(`[Couldn't read the comics cache file ${comicsCachePath}]`, err);
+    }
+    else{
+        try{
+            marvelCache.comics = JSON.parse(data.toString());
+            // marvelCache.ready = true;
+            console.log(`Marvel comics read from cache file ${comicsCachePath}`);
+        }
+        catch(e){
+            console.error(`[Couldn't parse the cached comics data in ${comicsCachePath}, won't use]`);
+        }
+    }
+});
+fs.readFile(eventsCachePath, (err, data) => {
+    if(err){
+        console.error(`[Couldn't read the events cache file ${eventsCachePath}]`, err);
+    }
+    else{
+        try{
+            marvelCache.events = JSON.parse(data.toString());
+            // marvelCache.ready = true;
+            console.log(`Marvel events read from cache file ${eventsCachePath}`);
+        }
+        catch(e){
+            console.error(`[Couldn't parse the cached events data in ${eventsCachePath}, won't use]`);
+        }
+    }
+});
+
+// characters
 const cachePath = '/tmp/marvelcharacters.json';
 fs.readFile(cachePath, (err, data) => {
     if(err){
         tryFetchMarvelCharacters().catch(_ => { console.log("[Error, no cached data, trying to get it from Marvel' API]", _); exit(-1); });
     }
     else{
-        
         fs.readFile(cachePath, (err, data) => {
             try{
                 if(err)
                     throw new Error(`Couldn't read the cache file ${cachePath}`);
                 else{
-                    marvelCharacters.data = JSON.parse(data.toString());
-                    marvelCharacters.ready = true;
+                    marvelCache.characters = JSON.parse(data.toString());
+                    marvelCache.ready_characters = true;
                     console.log(`MarvelCharacters read from cache file ${cachePath}`);
                 }
             }
@@ -173,8 +226,8 @@ fs.readFile(cachePath, (err, data) => {
 
 async function tryFetchMarvelCharacters(){
     getMarvelCharacters().then((res) =>{
-        marvelCharacters.data = res;
-        marvelCharacters.ready = true;
+        marvelCache.characters = res;
+        marvelCache.ready_characters = true;
         console.log(`Downloaded the Marvel' characters`);
         fs.open(cachePath, 'w', 0o644, (err, fd) => {
             if(fd < 0){
@@ -183,7 +236,7 @@ async function tryFetchMarvelCharacters(){
             else{
                 let buffer = undefined;
                 try{
-                    buffer = JSON.stringify(marvelCharacters.data);
+                    buffer = JSON.stringify(marvelCache.characters);
                     fs.write(fd, buffer, (err, fd) => {
                         if(err)
                             throw new Error(`Couldn't write the cache file ${cachePath}`);
@@ -204,7 +257,7 @@ async function tryFetchMarvelCharacters(){
 }
 
 module.exports = {
-    marvelCharacters,
+    marvelCache,
     getMarvelCharacters,
     getMarvelCharacterById,
     calculateRarity,

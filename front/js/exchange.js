@@ -80,15 +80,16 @@ function exchange(){
 
     fetch(`${url_backend}/exchange/trade`, options)
         .then(response => {
-            if(response.ok){
-                response.json()
+            response.json()
                     .then(json => {
                         clearState();
-                        console.log(json);
-                        getTrades();
+                        if(response.ok){
+                            console.log(json);
+                            getTrades();	
+                        }
+                        setUserFeedbackAlert(json.error);
                     })
                     .catch(_ => console.error(_));
-            }
         })
         .catch(_ => console.log(_));
 }
@@ -156,7 +157,11 @@ function showSelectedCards(cards, op){
                         .then(json => {
                             if(Object.keys(json).length === 0) return;
                             s = new Supercard(json, container, card, op);
-                            s.exchangeTweaks();
+                            
+                            if(op === "wanted")
+                                s.exchangeWantedTweaks()
+                            else if(op === "offered")
+                                s.exchangeTweaks();
                         })
                         .catch(_ => console.error(_));
                 }
@@ -246,11 +251,8 @@ function showTrades(trades){
         let id = trade._id;
 
         // display the data of the trade
-        // titleButton.innerHTML = id;
         titleButton.innerHTML = N;
         body.innerHTML = "";
-        // body.innerHTML = trade.offerer+"<br>"; // name of the users
-        // body.innerHTML += trade.wanter+"<br>";
         body.innerHTML += "<b>YOU offered:</b><br>";
         for(let o of trade.offers_names)
             body.innerHTML += o+"<br>";
@@ -259,7 +261,6 @@ function showTrades(trades){
             body.innerHTML += w+"<br>";
 
         // fix the accordion's collapse id
-        
         clone.getElementsByClassName("accordion-collapse")[0].id = `${id}`;
         titleButton.attributes.getNamedItem("data-bs-target").value = `#${id}`;
         titleButton.attributes.getNamedItem("aria-controls").value = `${id}`;

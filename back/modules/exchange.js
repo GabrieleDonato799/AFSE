@@ -13,26 +13,66 @@ async function createTrade(req, res){
     const wants = req.body.wants;
 
     let trade = undefined;
+    const session = client.startSession();
+    const transactionOptions = {
+        writeConcern: { w: 'majority' },
+    };
+    const offerer_objid = ObjectId.createFromHexString(offerer);
 
-    try{
+    // atomically delete the card from the user and create a trade
+    try {
         trade = {
-            offerer: ObjectId.createFromHexString(offerer),
+            offerer: offerer_objid,
             wanter: null,
             offers: offers,
             wants: wants
         };
 
-        await client.db(DB_NAME).collection("trades").insertOne(trade);
-        
-        res.json({error: "success"});
-    }catch(e){
-        console.log("MongoDB overloaded?");
-        console.log(e);
-    }
+        await session.withTransaction(async () => {
+            const collAlbums = client.db(DB_NAME).collection('albums');
+            const collTrades = client.db(DB_NAME).collection('trades');
 
-    // try to automatically match the trade
-    if(trade !== undefined)
-        await matchTrade(trade);
+            let possessedCards = await collAlbums.find(
+                { user_id: offerer_objid },
+                { supercards: { $all: [...offers] } }
+            ).toArray();
+            possessedCards = possessedCards[0].supercards;
+            console.log();
+
+            for(let o of offers){
+                if(!possessedCards.includes(o)){
+                    throw new Error("The user doesn't have the cards xe is trying to exchange.");
+                }
+            }
+            for(let w of wants){
+                if(possessedCards.includes(w)){
+                    throw new Error("The user can't exchange cards xe owns.");
+                }
+            }
+            await collAlbums.updateOne(
+                { user_id: offerer_objid },
+                { $pull: { supercards: { $in: [...offers] } } },
+                { session }
+            );
+            await collTrades.insertOne(trade);
+        }, transactionOptions);
+
+        // try to automatically match the trade
+        if(trade !== undefined){
+            matchTrade(trade);
+            res.json({error: "Successfully created!"});
+        }
+        else{
+            res.status(500).json({error: "An error occured please try later..."});
+        }
+    }
+    catch(e){
+        console.log(e);
+        res.status(500).json({error: `${e}`});
+    }
+    finally {
+        await session.endSession();
+    }
 
     return res;
 }
@@ -65,27 +105,55 @@ async function getTrades(req, res, uid){
 
         res.json(trades);
     }catch(e){
-        console.log("MongoDB overloaded?");
         console.log(e);
     }
 }
 
-async function matchTrade(trade){
-    let trades = [];
+async function matchTrade(t1){
+    const session = client.startSession();
+    const transactionOptions = {
+        writeConcern: { w: 'majority' },
+    };
+    // const user_id = ObjectId.createFromHexString(uid);
 
-    try{
-        let response = await client.db(DB_NAME).collection("trades").find(
-            {
-                offers: {$all: [...trade.wants]},
+    try {
+        await session.withTransaction(async () => {
+            const collAlbums = client.db(DB_NAME).collection('albums');
+            const collTrades = client.db(DB_NAME).collection('trades');
+            // Find all the trades of a different user (the offerer of t1) with exactly the opposite offers and wants. 
+            let t2Crs = await collTrades.find(
+                { $and: [
+                    { wants: { $eq: t1.offers } },
+                    { offers: { $eq: t1.wants } },
+                    { offerer: { $ne: t1.offerer } }
+                    // I don't check if the wanter is the user itself that offers, this integrity check must be enforced before creating the trade
+                ] }
+            ).toArray();
+            console.log("t1", t1);
+            if(t2Crs.length > 0){
+                let t2 = t2Crs[0];
+                console.log(t2);
+                /** NOTES: Some integrity contrains are (look in the project docs for more)
+                 * - that the user can't exchange cards with the same ones, can't get cards xe owns
+                 * - offers are removed from the offerer by the createTrade() function
+                 * - when the user create a trade the offered cards are removed from its album
+                 */
+                await collAlbums.updateOne(
+                    { user_id: t2.offerer },
+                    { $addToSet: { supercards: { $each: t1.offers } } }
+                )
+                await collAlbums.updateOne(
+                    { user_id: t1.offerer },
+                    { $addToSet: { supercards: { $each: t2.offers } } }
+                )
             }
-        );
-        for await (let t of response){
-            trades.push(t);
-        }
-        // console.log(trades);
-    }catch(e){
-        console.log("MongoDB overloaded?");
-        console.log(e);
+        }, transactionOptions);
+    }
+    catch(e){
+        console.error("Couldn't match the trade: ", t1, "; Error: ", e);
+    }
+    finally {
+        await session.endSession();
     }
 }
 

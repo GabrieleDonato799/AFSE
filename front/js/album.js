@@ -17,6 +17,9 @@ let userAlbum = undefined;
 let params = new URLSearchParams(window.location.search);
 let op = params.get("op");
 
+// This prevents that multiple fetches of the page will continuosly visibly override the cards contents. Only the fetch response that corresponds to the last timestamp of fetch will be applied. This is just a counter incremented at every fetch of a page.
+let pageFetchTS = 0;
+
 if(exchangeState.checkOp(op)){
     document.getElementsByName("exchange_button").forEach((elem) => elem.classList.remove("d-none"));
 }
@@ -76,23 +79,36 @@ function showSupercards(album){
     container.innerHTML = "";
     container.append(card);
     const pgsize = Math.min(album.length, (page+1)*PAGE_SIZE);
+    const placeHolderCharacter = {
+        id: 0,
+        name: "Still coming!",
+        thumbnail: "img/missing-card.jpg",
+        rarity: "000000"
+    }
+
+    pageFetchTS += 1;
+    const thisPageFetchTS = pageFetchTS;
 
     // delete all currently displayed Supercard objects
     Object.keys(displayedSupercards).forEach(k => delete displayedSupercards[k]);
 
     for (i = page*PAGE_SIZE; i < pgsize; i++) {
-        const thatI = i; // i changes during the call to fetch and its resolution, this way we know that in its context we have a fixed value.
+        const thatI = i; // i changes during the fetch call and its resolution, this way we know that in its context we have a fixed value.
+        displayedSupercards[`${album[thatI]}`] = new Supercard(placeHolderCharacter, container, card);
+
         // query the superhero
         fetch(`${url_backend}/characters/${album[i]}`, optionsGET)
             .then(res => res.json()
                 .then(json => {
                     if(json.error) console.error(`Server error: ${json.error}`);
                     else{
-                        displayedSupercards[`${album[thatI]}`] = new Supercard(json, container, card);
-                        if(userAlbum.supercards.includes(album[thatI]))
-                            displayedSupercards[`${album[thatI]}`].albumTweaks();
-                        else
-                            displayedSupercards[`${album[thatI]}`].albumMissingTweaks();
+                        if(thisPageFetchTS === pageFetchTS){
+                            displayedSupercards[`${album[thatI]}`].setSuperhero(json);
+                            if(userAlbum.supercards.includes(album[thatI]))
+                                displayedSupercards[`${album[thatI]}`].albumTweaks();
+                            else
+                                displayedSupercards[`${album[thatI]}`].albumMissingTweaks();
+                        }
                     }
                 })
             )
@@ -142,34 +158,40 @@ function updateProgress(album){
 function select(callingElem){
     let sid;
 
-    if(callingElem.classList.contains('missing-card')){
-        setUserFeedbackAlert("You don't have that card!");
-        return;
-    }
-
     sid = Number(callingElem.id.split("-")[1]);
-    selectId(sid);
+    selectId(callingElem, sid);
     adjustCardColor(callingElem, sid);
 }
 
 /**
- * Takes a superhero's numeric id and adds it to the correct state depending on the context.
+ * Takes the element which was selected by the user and it's superhero's numeric id. The id is added to the correct state depending on the context.
+ * The calling element is needed to verify integrity.
  * If the "op" query parameter is set it goes to the exchangeState otherwise to the sellState.
  * Does not change the color of the supercard.
  * @param {number} sid
  */
-function selectId(sid){
+function selectId(callingElem, sid){
     // prevent interference between selling and exchanging cards features
     if(
         (!sellState.isEmpty() && exchangeState.checkOp(op)) ||
         (!exchangeState.isEmpty() && !exchangeState.checkOp(op))
     ) {
-        setUserFeedbackAlert("Can't both exchange and sell");
-        setVisibleUserFeedbackAlert(true);
+        setUserFeedbackAlert("Can't both exchange and sell.<br>Exchange, sell or deselect everything.");
         return;
     };
 
+    if(callingElem.classList.contains('missing-card') && op !== "wanted"){
+        setUserFeedbackAlert("You don't have that card!");
+        return;
+    }
+
+    if(!callingElem.classList.contains('missing-card') && op == "wanted"){
+        setUserFeedbackAlert("You can't want something you already have!");
+        return;
+    }
+
     if(exchangeState.checkOp(op)){
+        // op contains a valid operation ("wants"|"offers")
         let size = exchangeState.size(op);
         if(exchangeState.contains(sid)){
             // remove it
@@ -181,6 +203,7 @@ function selectId(sid){
                 exchangeState.add(op, sid);
             }else{
                 // Error
+                setUserFeedbackAlert(`You can't select more than ${MAX_SELECTED_CARDS_EXCHANGE_PER_OP} cards to exchange (per side).`);
             }
         }    
     }
@@ -196,6 +219,7 @@ function selectId(sid){
                 sellState.add(sid);
             }else{
                 // Error
+                setUserFeedbackAlert(`You can't select more than ${MAX_SELECTED_CARDS_TO_SELL} cards to sell.`);
             }
         }  
     }

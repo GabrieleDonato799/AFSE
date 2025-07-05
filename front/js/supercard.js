@@ -16,14 +16,12 @@ async function showContent(character, type){
     // the container is only used to hide or show the content with the "d-none" class
     let container = document.getElementById(`${type}-container`);
     let originalCard = document.getElementById(type);
-
-    container.classList.remove('d-none');
     
     // retrieve the content and add a card asynchronously
     fetch(`${url_backend}/characters/${character.id}/${type}`, optionsGET)
     .then(res => {
         if(res.ok){
-            content = res.json()
+            res.json()
                 .then(json => {
                     let content = json.results;
 
@@ -32,7 +30,7 @@ async function showContent(character, type){
                         let description = content[i].description;
 
                         // skip those with "image not found"
-                        if(content[i].thumbnail.path === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available") return;
+                        if(content[i].thumbnail.path === "http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available") continue;
 
                         card.id = `${type}-${i}`;
                         card.getElementsByClassName("card-title")[0].innerText = `${content[i].title}`;
@@ -44,9 +42,13 @@ async function showContent(character, type){
                         card.classList.remove('d-none');
                         originalCard.parentNode.insertBefore(card, null);
                     }
-                });
-            }
-        }).catch(err => console.error(err));
+
+                    if(content.length > 0)
+                        container.classList.remove('d-none');
+                })
+                .catch(_ => console.error(_));
+        }
+    }).catch(err => console.error(err));
 }
 
 /**
@@ -64,10 +66,12 @@ function getContent(cid){
                     showContent(json, "series");
                     showContent(json, "events");
                 })
+                .catch(_ => console.error(_));
             }else{
                 response.json().then(error => {
                     console.log(`Invalid character ${error.error}`);
                 })
+                .catch(_ => console.error(_));
             }
         }).catch(_ => console.log(_));
 }

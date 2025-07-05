@@ -16,7 +16,6 @@ async function getOffers(res){
         }
         res.json({offers});
     }catch(e){
-        console.log("MongoDB overloaded?");
         console.log(e);
     }
 }
@@ -46,7 +45,6 @@ async function buyOffer(req, res, uid){
 
         res.json({error: "success"});
     }catch(e){
-        console.log("MongoDB overloaded?");
         console.log(e);
     }
 }

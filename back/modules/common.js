@@ -37,5 +37,5 @@ function hashSha256(input){
 // });
 
 module.exports = {
-    app, client, HOST, PORT, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET, hashSha256
+    app, client, HOST, PORT, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET, hashSha256, optionsJWS
 };
