@@ -51,7 +51,7 @@ async function getUserBalance(){
             let counter = document.getElementById("coins-counter");
             if(response.ok){
                 response.json().then(json => {
-                    counter.innerHTML = `${json.balance} `;
+                    counter.innerHTML = `${json.balance} coins`;
                     counter.parentElement.classList.remove('d-none');
                 });
             }

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "nodemon swagger.js -i 'swagger-output.json' & cd .. ; nodemon back/index.js",
     "inspect": "nodemon swagger.js -i 'swagger-output.json' & cd .. ; nodemon --inspect back/index.js",
+    "inspect-brk": "nodemon swagger.js -i 'swagger-output.json' & cd .. ; nodemon --inspect-brk back/index.js",
     "bsync": "cd .. ; browser-sync start --server --files './front/.*' --files './back/.*'"
   },
   "author": "Gabriele Donato",

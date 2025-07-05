@@ -1,7 +1,11 @@
 const { app, client, DB_NAME } = require('./common.js');
 const { ObjectId } = require('mongodb');
 
-
+/**
+ * Takes the user id and creates its album.
+ * Does not return anything.
+ * @param {string} uid
+ */
 async function createUserAlbum(uid){
     const hasAlbum = await client.db(DB_NAME).collection("albums").findOne({
         user_id: uid 
