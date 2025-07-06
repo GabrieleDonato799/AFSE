@@ -172,6 +172,7 @@ async function addUser(res, user) {
 
     user.password = await hashSaltArgon2(user.password);
     user.balance = 0;
+    user.registration_date = Date.now();
 
     try {
         await client.db(DB_NAME).collection("users").findOne(
@@ -199,7 +200,7 @@ async function addUser(res, user) {
         // Return a JWS token
         const {tok, opts} = genJWS(user._id, admin=false);
         res.cookie('session_token', tok, opts);
-        res.status(201).json({"_id":user._id});
+        res.status(201).json({"_id":user._id, "nick":user.nick});
     } catch (e) {
         console.error(e);
         if (e.code === 11000) {

@@ -50,6 +50,10 @@ function createCollections(){
                             bsonType: "objectId",
                             description: "'album_id' must be an ObjectId and is NOT required as the code doesn't create the user and its album in a single transaction"
                         },
+                        registration_date: {
+                            bsonType: "int",
+                            description: "'registration_date' must be an integer and is required to be able to prove the date in which the user claimed to over 14 years old."
+                        }
                     }
                 }
             }
