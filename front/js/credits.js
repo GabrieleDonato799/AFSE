@@ -1,5 +1,6 @@
 /**
- * @module front/credits
+ * @module front/js/credits
+ * @description Retrieve, show and buy offers.
  */
 
 let user_id = localStorage.getItem("user_id");

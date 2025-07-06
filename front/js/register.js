@@ -1,5 +1,6 @@
 /**
- * @module front/register
+ * @module front/js/register
+ * @description Registration form validation and submission.
  */
 
 let form = document.getElementById("registerForm");
@@ -41,7 +42,7 @@ function checkDetails(){
 
 /**
  * Attempts to register the user, if it fails the user is informed by bootstrap' alerts. If the registration succeeds the user is automatically redirected to the index.
- * Assume it doesn't return a value.
+ * Doesn't return a value.
  */
 function register() {
     const options = {

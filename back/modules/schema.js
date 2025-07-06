@@ -1,6 +1,6 @@
 /**
- * @module front/schema
- * @description Setups the mongodb collections with a validation schema.
+ * @module back/modules/schema
+ * @description Setups the mongodb collections with a validation schema and adds the default offers for coins.
  */
 
 const { ObjectId } = require('mongodb');

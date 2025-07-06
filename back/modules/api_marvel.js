@@ -1,5 +1,5 @@
 /**
- * @module back/api_marvel
+ * @module back/modules/api_marvel
  * @description Functions to interact with the Marvel API.
  */
 

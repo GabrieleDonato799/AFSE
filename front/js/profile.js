@@ -1,5 +1,6 @@
 /**
- * @module front/profile
+ * @module front/js/profile
+ * @description Manage the user's profile including deletion.
  */
 
 let user_id = localStorage.getItem("user_id");

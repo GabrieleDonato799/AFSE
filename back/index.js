@@ -1,5 +1,6 @@
 /**
- * @module index
+ * @module back/index
+ * @description Entry point, .env loading, EJS templates rendering.
  */
 
 const dotenv = require('dotenv');

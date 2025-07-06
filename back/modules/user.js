@@ -1,5 +1,6 @@
 /**
- * @module back/user
+ * @module back/modules/user
+ * @description Endpoints for user creation/deletion, information update (from the settings page), login, registration and logout with JWS token clearing.
  */
 
 const { app, client, DB_NAME, hashSaltArgon2, verifySaltedHashArgon2, optionsJWS } = require('./common.js');

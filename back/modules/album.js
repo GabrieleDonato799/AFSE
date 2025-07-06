@@ -1,5 +1,6 @@
 /**
- * @module back/album
+ * @module back/modules/album
+ * @description Album related endpoints, user album creation/deletion and the card selling operation.
  */
 
 const { app, client, DB_NAME } = require('./common.js');

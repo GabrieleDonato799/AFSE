@@ -1,5 +1,6 @@
 /**
- * @module back/common
+ * @module back/modules/common
+ * @description Common variables initialized at startup and functions.
  */
 
 const crypto = require('crypto');

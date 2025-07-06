@@ -1,5 +1,6 @@
 /**
- * @module front/exchange
+ * @module front/js/exchange
+ * @description Retrieve, show and manage trades.
  */
 
 var page = 1;

@@ -1,5 +1,6 @@
 /**
- * @module back/packets
+ * @module back/modules/packets
+ * @description Packets generation module.
  */
 
 const { app, client, DB_NAME, SUPERCARD_PACKET_SIZE, PRICE_FOR_A_PACKET } = require('./common.js');

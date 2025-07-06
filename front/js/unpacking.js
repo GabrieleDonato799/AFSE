@@ -1,3 +1,8 @@
+/**
+ * @module front/js/unpacking
+ * @description Packets unpacking.
+ */
+
 let user_id = localStorage.getItem("user_id");
 
 if(user_id === undefined) throw new Error("Unauthorized");

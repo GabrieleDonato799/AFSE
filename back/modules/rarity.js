@@ -1,5 +1,6 @@
 /**
- * @module back/rarity
+ * @module back/modules/rarity
+ * @description This module manages rarities for the supercards. On the first run it downloads the characters information from the Marvel API, caches it, calculates and adds the rarity to every supercard. On subsequent runs it will reuse the cached data, located under the /tmp/ folder.
  */
 
 const lib = require('../../front/shared/lib.js')

@@ -1,5 +1,5 @@
 /**
- * @module shared/lib
+ * @module front/shared/lib
  * @description Common utilities.
  */
 

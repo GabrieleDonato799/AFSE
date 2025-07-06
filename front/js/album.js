@@ -1,5 +1,6 @@
 /**
- * @module front/album
+ * @module front/js/album
+ * @description Functionalities are: retrieve and show cards, search by name and filter by possession, change page, sell them, select cards to offer or wanted.
  */
 const MAX_SELECTED = 4;
 const PAGE_SIZE = 20;

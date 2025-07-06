@@ -1,5 +1,6 @@
 /**
- * @module back/exchange
+ * @module back/modules/exchange
+ * @description Card exchanging endpoints for trade creation/deletion, information retrieval and automatic server side matching.
  */
 
 const { app, client, DB_NAME } = require('./common.js');
@@ -107,7 +108,7 @@ async function createTrade(req, res){
  * Returns JSON formatted errors in the response.
  * @param {*} req 
  * @param {*} res 
- * @returns 
+ * @returns {JSON}
  */
 async function deleteTrade(req, res){
     const tradeId = ObjectId.createFromHexString(req.params.id);

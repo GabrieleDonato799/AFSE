@@ -1,5 +1,6 @@
 /**
- * @module back/characters
+ * @module back/modules/characters
+ * @description Characters related endpoints for information retrieval and the server side of the album search bar functionality.
  */
 
 const { app } = require('./common.js');

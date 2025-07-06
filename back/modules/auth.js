@@ -1,5 +1,5 @@
 /**
- * @module back/auth
+ * @module back/modules/auth
  * @description Middleware for JWT authentication
  */
 

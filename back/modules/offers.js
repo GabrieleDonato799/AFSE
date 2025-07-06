@@ -1,5 +1,6 @@
 /**
- * @module back/offers
+ * @module back/modules/offers
+ * @description Contains the endpoints to retrieve and buy offers.
  */
 
 const { app, client, DB_NAME } = require('./common.js');

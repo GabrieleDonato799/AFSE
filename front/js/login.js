@@ -1,5 +1,6 @@
 /**
- * @module front/login
+ * @module front/js/login
+ * @description Login form validation and submission, client side logout procedure.
  */
 
 const params = new URLSearchParams(window.location.search);
@@ -10,7 +11,7 @@ if(params.get("logout") !== null){
 }
 
 /**
- * Checks if the details inserted in the login form are correct, if not it triggers allerts and disables submission.
+ * Checks if the details inserted in the login form are correct, if not it triggers an alert and disables the form submission.
  * Returns whether the details are correct or not.
  * @returns {boolean} 
  */
@@ -34,8 +35,8 @@ function checkDetails(){
 
 /**
  * Attempts to login the user.
- * If it doesn't succeed it will trigger allerts to the user.
- * Assume it doesn't return a value
+ * If it doesn't succeed it will trigger the feedback alert.
+ * Doesn't return a value
  */
 function login() {
     const options = {

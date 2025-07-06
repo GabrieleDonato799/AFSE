@@ -1,5 +1,6 @@
 /**
- * @module front/supercard
+ * @module front/js/supercard
+ * @description Retrieves the superhero information and displays it on the "card details" page.
  */
 
 let params = new URLSearchParams(window.location.search);

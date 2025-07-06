@@ -1,6 +1,6 @@
 /**
- * @module js/navbar
- * @description Management of the navigation bar.
+ * @module front/js/navbar
+ * @description Management of the navigation bar and the common user feedback alert, coins balance updating.
  */
 
 var navbar = document.getElementById("navbar");
