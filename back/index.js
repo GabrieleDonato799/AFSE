@@ -11,6 +11,7 @@ app.use(express.json());
 app.use(cors());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(express.static(__dirname + '/../front')); // Tell express from where it should deliver the static content
+app.use('/favicon.ico', express.static(__dirname + '/../front/favicon.ico'));
 
 require('./modules/album.js');
 require('./modules/characters.js');
