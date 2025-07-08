@@ -22,7 +22,7 @@ const optionsJWS = {
     secure: true,
 };
 
-const mAtlasURI = "<MongoDB Atlas configuration URI goes here>";
+const mAtlasURI = process.env.ATLAS_URI;
 
 const app = express();
 

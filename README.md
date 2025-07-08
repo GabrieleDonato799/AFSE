@@ -28,6 +28,7 @@ JWT_SECRET_KEY=<key of at least 256 bit>
 MARVEL_PUBLIC_API_KEY=<public api key goes here>
 MARVEL_PRIVATE_API_KEY=<private api key goes here>
 PASSWORD_MIN_LENGTH=<user's password lenght goes here>
+ATLAS_URI=<MongoDB Atlas configuration URI goes here>
 ```
 
 Generation of the JSDoc source code documentation:
